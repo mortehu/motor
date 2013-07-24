@@ -14,13 +14,12 @@ LD=$(CC)
 AR=$(TOOLCHAIN_PREFIX)/bin/pic32-ar
 BIN2HEX=$(TOOLCHAIN_PREFIX)/bin/pic32-bin2hex
 
-AVRDUDE=$(AVRTOOLS_PREFIX)/avrdude
 AVRDUDEFLAGS=-C$(AVRTOOLS_PREFIX)/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
 
 all: main.hex
 
 install: main.hex
-	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:main.hex:i
+	avrdude $(AVRDUDEFLAGS) flash:w:main.hex:i
 
 clean:
 	rm -f startup/*.o *.o
