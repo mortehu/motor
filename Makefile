@@ -8,7 +8,10 @@ CPPFLAGS=-DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/p
 CFLAGS=-mno-smart-io -fno-exceptions -ffunction-sections -fdata-sections -mdebugger -Wcast-align -fno-short-double -mprocessor=$(CPUTYPE)
 CXXFLAGS=$(CFLAGS)
 ASFLAGS=-mprocessor=32MX795F512L
-LDFLAGS=--gc-sections -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$(CPUTYPE)
+LDFLAGS=--gc-sections \
+  -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$(CPUTYPE) \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/mips16/libpic32.a
 
 CC=$(TOOLCHAIN_PREFIX)/bin/pic32-gcc
 CXX=$(TOOLCHAIN_PREFIX)/bin/pic32-gcc
@@ -38,12 +41,12 @@ install: main.hex
 	avrdude $(AVRDUDEFLAGS) flash:w:main.hex:i
 
 clean:
-	rm -f $(OBJECTS) crt0.o crti.o crtn.o
+	rm -f $(OBJECTS)
 	rm -f main.hex
 	rm -f main.elf
 
-main.elf: $(OBJECTS) startup.a
-	$(LD) $(LDFLAGS) $(OUTPUT_OPTION) $(OBJECTS) -T $(LDSCRIPT) mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/mips16/libpic32.a
+main.elf: $(OBJECTS)
+	$(LD) $(LDFLAGS) $(OUTPUT_OPTION) $(OBJECTS) -T $(LDSCRIPT)
 
 main.hex: main.elf
 	$(BIN2HEX) -a main.elf
