@@ -16,18 +16,32 @@ BIN2HEX=$(TOOLCHAIN_PREFIX)/bin/pic32-bin2hex
 
 AVRDUDEFLAGS=-C$(AVRTOOLS_PREFIX)/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
 
+C_SOURCES = \
+  mpide/hardware/pic32/variants/Max32/Board_Data.c \
+  main.c
+OBJECTS = $(C_SOURCES:.c=.o)
+
 all: main.hex
 
 install: main.hex
 	avrdude $(AVRDUDEFLAGS) flash:w:main.hex:i
 
 clean:
-	rm -f startup/*.o *.o
+	rm -f *.o
 	rm -f main.hex
 	rm -f main.elf
 
-startup.a: startup/crt0.o startup/crti.o startup/crtn.o
-	$(AR) crs $@ startup/crt0.o startup/crti.o startup/crtn.o
+crt0.o: mpide/hardware/pic32/cores/pic32/cpp-startup.S
+	$(COMPILE.S) $< $(OUTPUT_OPTION)
+
+crti.o: mpide/hardware/pic32/cores/pic32/crti.S
+	$(COMPILE.S) $< $(OUTPUT_OPTION)
+
+crtn.o: mpide/hardware/pic32/cores/pic32/crtn.S
+	$(COMPILE.S) $< $(OUTPUT_OPTION)
+
+startup.a: crt0.o crti.o crtn.o
+	$(AR) crs $@ crt0.o crti.o crtn.o
 
 main.elf: main.o startup.a
 	$(LD) $(LDFLAGS) $(OUTPUT_OPTION) main.o startup.a -lm -T $(LDSCRIPT)
