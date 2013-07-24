@@ -1,26 +1,28 @@
-CPUTYPE=32MX320F128L
-TOOLCHAIN_PREFIX=mpide/hardware/pic32/compiler/pic32-tools
-AVRTOOLS_PREFIX=mpide/hardware/tools
+# System settings
+CPUTYPE = 32MX320F128L
+TOOLCHAIN_PREFIX = mpide/hardware/pic32/compiler/pic32-tools
+AVRTOOLS_PREFIX = mpide/hardware/tools
 SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
-LDSCRIPT=mpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$(CPUTYPE).ld
+LDSCRIPT = mpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$(CPUTYPE).ld
 
-CPPFLAGS=-DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/pic32/variants/Uno32
-CFLAGS=-mno-smart-io -fno-exceptions -ffunction-sections -fdata-sections -mdebugger -Wcast-align -fno-short-double -mprocessor=$(CPUTYPE)
-CXXFLAGS=$(CFLAGS)
-ASFLAGS=-mprocessor=32MX795F512L
-LDFLAGS=--gc-sections \
-  -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$(CPUTYPE) \
-  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \
-  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/mips16/libpic32.a
+# Tool flags
+CPPFLAGS = -DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/pic32/variants/Uno32
+CFLAGS = -mno-smart-io -Wall -mprocessor=$(CPUTYPE)
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
+ASFLAGS = -mprocessor=32MX795F512L
+LDFLAGS = \
+  --gc-sections \
+  -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$(CPUTYPE)
+AVRDUDEFLAGS = -C$(AVRTOOLS_PREFIX)/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
 
-CC=$(TOOLCHAIN_PREFIX)/bin/pic32-gcc
-CXX=$(TOOLCHAIN_PREFIX)/bin/pic32-gcc
-LD=$(TOOLCHAIN_PREFIX)/bin/pic32-ld
-AR=$(TOOLCHAIN_PREFIX)/bin/pic32-ar
-BIN2HEX=$(TOOLCHAIN_PREFIX)/bin/pic32-bin2hex
+# Tool aliases
+CC = $(TOOLCHAIN_PREFIX)/bin/pic32-gcc
+CXX = $(TOOLCHAIN_PREFIX)/bin/pic32-gcc
+LD = $(TOOLCHAIN_PREFIX)/bin/pic32-ld
+AR = $(TOOLCHAIN_PREFIX)/bin/pic32-ar
+BIN2HEX = $(TOOLCHAIN_PREFIX)/bin/pic32-bin2hex
 
-AVRDUDEFLAGS=-C$(AVRTOOLS_PREFIX)/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
-
+# Input files
 AS_SOURCES = \
   mpide/hardware/pic32/cores/pic32/cpp-startup.S \
   mpide/hardware/pic32/cores/pic32/crti.S \
@@ -34,6 +36,9 @@ C_SOURCES = \
 CC_SOURCES = \
   main.cc
 OBJECTS = $(AS_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CC_SOURCES:.cc=.o)
+LDADD = \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/mips16/libpic32.a
 
 all: main.hex
 
@@ -46,7 +51,7 @@ clean:
 	rm -f main.elf
 
 main.elf: $(OBJECTS)
-	$(LD) $(LDFLAGS) $(OUTPUT_OPTION) $(OBJECTS) -T $(LDSCRIPT)
+	$(LD) $(LDFLAGS) $(OUTPUT_OPTION) $(OBJECTS) $(LDADD) -T $(LDSCRIPT)
 
 main.hex: main.elf
 	$(BIN2HEX) -a main.elf
