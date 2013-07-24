@@ -2,7 +2,7 @@ CPUTYPE=32MX795F512L
 TOOLCHAIN_PREFIX=mpide/hardware/pic32/compiler/pic32-tools
 AVRTOOLS_PREFIX=mpide/hardware/tools
 SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
-LDSCRIPT=chipKIT-MAX32-application-$(CPUTYPE).ld
+LDSCRIPT=mpide/hardware/pic32/cores/pic32/chipKIT-MAX32-application-$(CPUTYPE).ld
 
 CPPFLAGS=-DF_CPU=80000000L
 CFLAGS=-mno-smart-io -fno-exceptions -ffunction-sections -fdata-sections -mdebugger -Wcast-align -fno-short-double -mprocessor=$(CPUTYPE)
