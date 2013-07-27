@@ -6,7 +6,7 @@ SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
 LDSCRIPT = mpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$(CPUTYPE).ld
 
 # Tool flags
-CPPFLAGS = -DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/pic32/variants/Uno32
+CPPFLAGS = -DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/pic32/variants/Uno32 -Impide/hardware/pic32/libraries/Wire/utility -D_USB
 CFLAGS = -mno-smart-io -Wall -mprocessor=$(CPUTYPE)
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = -mprocessor=32MX795F512L
@@ -32,13 +32,24 @@ C_SOURCES = \
   mpide/hardware/pic32/cores/pic32/wiring_digital.c \
   mpide/hardware/pic32/cores/pic32/wiring_analog.c \
   mpide/hardware/pic32/cores/pic32/wiring.c \
-  mpide/hardware/pic32/cores/pic32/task_manager.c
+  mpide/hardware/pic32/cores/pic32/HardwareSerial.c \
+  mpide/hardware/pic32/cores/pic32/HardwareSerial_cdcacm.c \
+  mpide/hardware/pic32/cores/pic32/task_manager.c \
+  mpide/hardware/pic32/libraries/Wire/utility/twi.c \
+  usb_serial.c
+CPP_SOURCES = \
+  mpide/hardware/pic32/libraries/Wire/Wire.cpp \
+  mpide/hardware/pic32/cores/pic32/Print.cpp
 CC_SOURCES = \
   main.cc
-OBJECTS = $(AS_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CC_SOURCES:.cc=.o)
+OBJECTS = $(AS_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(CC_SOURCES:.cc=.o)
 LDADD = \
   mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \
-  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/mips16/libpic32.a
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libstdc++.a \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libc.a \
+  mpide/hardware/pic32/compiler/pic32-tools/lib/gcc/pic32mx/4.5.1/libgcc.a \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libpic32.a \
+  mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libg.a
 
 all: main.hex
 
