@@ -1,4 +1,6 @@
 *.a
 *.o
+.*.sw?
 main.elf
 main.hex
+mpide
