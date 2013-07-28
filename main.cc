@@ -21,7 +21,7 @@ struct motor
 };
 
 static struct motor motors[2];
-static int expecting_hello;
+static int expecting_hello, expecting_error;
 
 int
 main()
@@ -41,6 +41,9 @@ main()
 
   for (;;)
     {
+      ++motors[0].odometer;
+      ++motors[1].odometer;
+
       /* Health indicator */
       digitalWrite(PIN_LED1, (millis() >> 9) & 1);
     }
@@ -54,7 +57,11 @@ void motor_process_request(const struct motor_request* rx_buffer)
 
       if (rx_buffer->u.hello.magic_a != MOTOR_MAGIC_A ||
           rx_buffer->u.hello.magic_b != MOTOR_MAGIC_B)
-        break;
+        {
+          expecting_error = 2;
+
+          break;
+        }
 
       expecting_hello = 1;
 
@@ -66,23 +73,35 @@ void motor_process_request(const struct motor_request* rx_buffer)
       motors[1].power = rx_buffer->u.power.motor1_power;
 
       break;
+
+    default:
+
+      expecting_error = 1;
     }
 }
 
 void motor_generate_response(struct motor_response* tx_buffer)
 {
+  tx_buffer->sync = 0xff;
+
   if (expecting_hello)
     {
-      tx_buffer->sync = 0xff;
       tx_buffer->type = MOTOR_RESP_HELLO;
       tx_buffer->u.hello.magic_a = MOTOR_MAGIC_A;
       tx_buffer->u.hello.magic_b = MOTOR_MAGIC_B;
       motors[0].odometer = 0;
       motors[1].odometer = 0;
+      expecting_hello = 0;
+    }
+  else if (expecting_error)
+    {
+      tx_buffer->type = MOTOR_RESP_ERROR;
+      tx_buffer->u.error.reserved0 = expecting_error;
+      tx_buffer->u.error.reserved1 = 0;
+      expecting_error = 0;
     }
   else
     {
-      tx_buffer->sync = 0xff;
       tx_buffer->type = MOTOR_RESP_ODOMETER;
       tx_buffer->u.odometer.motor0_odometer = motors[0].odometer;
       tx_buffer->u.odometer.motor1_odometer = motors[1].odometer;

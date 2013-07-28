@@ -23,10 +23,10 @@ static const unsigned int error_bit =                1 << (_SER0_IRQ % 32);
 static const unsigned int rx_bit =                   1 << ((_SER0_IRQ + 1) % 32);
 static const unsigned int tx_bit =                   1 << ((_SER0_IRQ + 2) % 32);
 
-static char tx_buffer[sizeof(struct motor_response)];
+static unsigned char tx_buffer[sizeof(struct motor_response)] __attribute__((aligned(4)));
 static unsigned int tx_remaining;
 
-static char rx_buffer[sizeof(struct motor_request)];
+static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((aligned(4)));
 static unsigned int rx_fill;
 
 void serial_open(unsigned int baud_rate)
@@ -60,7 +60,11 @@ void __ISR(_SER0_VECTOR, _SER0_IPL_ISR) serial0_interrupt_handler(void)
 {
   unsigned int flags = interrupt_flags->reg;
 
-  interrupt_flags->clr = rx_bit | tx_bit | error_bit;
+  if (!tx_remaining)
+    {
+      motor_generate_response((struct motor_response *) tx_buffer);
+      tx_remaining = sizeof(tx_buffer);
+    }
 
   /* Receive.  See Example 19-5.[1]  */
   if (0 != (flags & rx_bit))
@@ -76,18 +80,22 @@ void __ISR(_SER0_VECTOR, _SER0_IPL_ISR) serial0_interrupt_handler(void)
           motor_process_request((const struct motor_request *) rx_buffer);
           rx_fill = 0;
         }
+
+      interrupt_flags->clr = rx_bit;
     }
 
   /* Transmit.  See Section 19.3.[1]  */
   if (0 != (flags & tx_bit))
     {
-      if (!tx_remaining)
-        {
-          motor_generate_response((struct motor_response *) tx_buffer);
-          tx_remaining = sizeof(tx_buffer);
-        }
+      volatile unsigned char ch;
+      ch = tx_buffer[sizeof(tx_buffer) - tx_remaining];
 
-      uart->uxTx.reg = tx_buffer[sizeof(tx_buffer) - tx_remaining];
+      interrupt_flags->clr = tx_bit;
+
+      uart->uxTx.reg = ch;
       --tx_remaining;
     }
+
+  if (0 != (flags & error_bit))
+    interrupt_flags->clr = error_bit;
 }

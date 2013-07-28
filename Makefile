@@ -7,7 +7,7 @@ LDSCRIPT = mpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$(CPUTYPE)
 
 # Tool flags
 CPPFLAGS = -DF_CPU=80000000L -Impide/hardware/pic32/cores/pic32 -Impide/hardware/pic32/variants/Uno32 -Impide/hardware/pic32/libraries/Wire/utility
-CFLAGS = -mno-smart-io -Wall -mprocessor=$(CPUTYPE)
+CFLAGS = -O3 -mno-smart-io -Wall -mprocessor=$(CPUTYPE)
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = -mprocessor=$(CPUTYPE)
 LDFLAGS = \
@@ -41,7 +41,7 @@ LDADD = \
   mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \
   mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libpic32.a
 
-all: main.hex
+all: main.hex controller
 
 install: main.hex
 	avrdude $(AVRDUDEFLAGS) flash:w:main.hex:i
@@ -56,3 +56,6 @@ main.elf: $(OBJECTS)
 
 main.hex: main.elf
 	$(BIN2HEX) -a main.elf
+
+controller: controller.c
+	gcc $(OUTPUT_OPTION) -Wall $<
