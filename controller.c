@@ -44,15 +44,15 @@ process_response (struct motor_response *resp)
 
       break;
 
-    case MOTOR_RESP_ODOMETER:
-
-      fprintf (stderr, "Odometer: %04x %04x\n", resp->u.odometer.motor0_odometer, resp->u.odometer.motor1_odometer);
-
-      break;
-
     case MOTOR_RESP_ERROR:
 
       fprintf (stderr, "Error: %d\n", resp->u.error.reserved0);
+
+      break;
+
+    case MOTOR_RESP_ODOMETER:
+
+      fprintf (stderr, "Odometer: %04x %04x\n", resp->u.odometer.motor0_odometer, resp->u.odometer.motor1_odometer);
 
       break;
 

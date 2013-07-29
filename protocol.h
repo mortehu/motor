@@ -13,8 +13,8 @@ enum motor_request_id
 enum motor_response_id
 {
   MOTOR_RESP_HELLO =    0x00,
-  MOTOR_RESP_ODOMETER = 0x01,
-  MOTOR_RESP_ERROR    = 0x02,
+  MOTOR_RESP_ERROR =    0x01,
+  MOTOR_RESP_ODOMETER = 0x02,
 };
 
 struct motor_request
@@ -71,18 +71,18 @@ struct motor_response
 
       struct
         {
+          unsigned short reserved0;
+          unsigned short reserved1;
+        } error;
+
+      struct
+        {
           /* These values denote the total distance traveled in units of Hall effect
            * sensor transitions.
            */
           unsigned short motor0_odometer;
           unsigned short motor1_odometer;
         } odometer;
-
-      struct
-        {
-          unsigned short reserved0;
-          unsigned short reserved1;
-        } error;
     } u;
 };
 
