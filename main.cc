@@ -100,6 +100,10 @@ main()
   pinMode(PIN_LED1, OUTPUT);
   pinMode(PIN_LED2, OUTPUT);
 
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+
   motors[0].set_sensor_pins(A3, A4, A5);
   motors[1].set_sensor_pins(A0, A1, A2);
 
@@ -107,6 +111,18 @@ main()
     {
       /* Health indicator */
       digitalWrite(PIN_LED1, (millis() >> 9) & 1);
+
+      /*  012345
+          _XXX__
+          __XXX_
+          ___XXX
+       */
+
+      /* Odometer indicator */
+      unsigned int x = motors[0].odometer % 6;
+      digitalWrite(5, (x >= 1 && x <= 3));
+      digitalWrite(6, (x >= 2 && x <= 4));
+      digitalWrite(7, (x >= 3 && x <= 5));
 
       motors[0].update();
       motors[1].update();
