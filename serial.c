@@ -63,12 +63,6 @@ serial0_interrupt_handler(void)
 {
   unsigned int flags = interrupt_flags->reg;
 
-  if (!tx_remaining)
-    {
-      motor_generate_response((struct motor_response *) tx_buffer);
-      tx_remaining = sizeof(tx_buffer);
-    }
-
   /* Receive.  See Example 19-5.[1]  */
   if (0 != (flags & rx_bit))
     {
@@ -91,6 +85,13 @@ serial0_interrupt_handler(void)
   if (0 != (flags & tx_bit))
     {
       volatile unsigned char ch;
+
+      if (!tx_remaining)
+        {
+          motor_generate_response((struct motor_response *) tx_buffer);
+          tx_remaining = sizeof(tx_buffer);
+        }
+
       ch = tx_buffer[sizeof(tx_buffer) - tx_remaining];
 
       interrupt_flags->clr = tx_bit;
