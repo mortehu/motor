@@ -20,6 +20,12 @@ libplatform_a_SOURCES = \
   mpide/hardware/pic32/cores/pic32/wiring_analog.c \
   mpide/hardware/pic32/cores/pic32/wiring_digital.c \
   serial_uno32.c
+
+SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
+AVRDUDEFLAGS=-Cmpide/hardware/tools/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
+
+install-data-local:
+	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:main.hex:i
 endif
 
 if SYSTEM_GNU
