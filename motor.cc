@@ -1,8 +1,5 @@
+#include "hardware.h"
 #include "motor.h"
-
-#include "mpide/hardware/pic32/cores/pic32/System_Defs.h"
-#include "mpide/hardware/pic32/variants/Uno32/Board_Defs.h"
-#include "mpide/hardware/pic32/cores/pic32/wiring.h"
 
 /* HALL_SENSOR_THRESHOLD is specified in multiples of of 4.9 mV. */
 #define HALL_SENSOR_THRESHOLD 10 /* 49 mV */

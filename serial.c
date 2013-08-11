@@ -9,11 +9,9 @@
 #include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/p32xxxx.h"
 #include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/proc/p32mx320f128l.h"
 #include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/sys/attribs.h"
-#include "mpide/hardware/pic32/cores/pic32/System_Defs.h"
 #include "mpide/hardware/pic32/cores/pic32/p32_defs.h"
-#include "mpide/hardware/pic32/cores/pic32/wiring.h"
-#include "mpide/hardware/pic32/variants/Uno32/Board_Defs.h"
 
+#include "hardware.h"
 #include "serial.h"
 
 static p32_uart* const    uart =                     (p32_uart *) _SER0_BASE;

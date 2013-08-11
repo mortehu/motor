@@ -8,3 +8,8 @@ The source code and Makefile expects MPIDE to be avaiable under the mpide/
 subdirectory.  As of 2013-07-24, it can be found at:
 
 https://github.com/downloads/chipKIT32/chipKIT32-MAX/mpide-0023-linux-20120903.tgz
+
+To build this package, run:
+
+  ./configure --host=mips-pic32-none
+  make

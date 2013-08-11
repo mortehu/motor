@@ -1,7 +1,4 @@
-#include "mpide/hardware/pic32/cores/pic32/System_Defs.h"
-#include "mpide/hardware/pic32/variants/Uno32/Board_Defs.h"
-#include "mpide/hardware/pic32/cores/pic32/wiring.h"
-
+#include "hardware.h"
 #include "motor.h"
 #include "serial.h"
 
