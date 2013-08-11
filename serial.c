@@ -14,7 +14,7 @@
 #include "mpide/hardware/pic32/cores/pic32/wiring.h"
 #include "mpide/hardware/pic32/variants/Uno32/Board_Defs.h"
 
-#include "motor.h"
+#include "serial.h"
 
 static p32_uart* const    uart =                     (p32_uart *) _SER0_BASE;
 static p32_regset* const  interrupt_flags =          (p32_regset *) &IFS0 + (_SER0_IRQ / 32);
@@ -29,7 +29,8 @@ static unsigned int tx_remaining;
 static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((aligned(4)));
 static unsigned int rx_fill;
 
-void serial_open(unsigned int baud_rate)
+void
+serial_open(unsigned int baud_rate)
 {
   p32_regset *interrupt_priority_control;
   unsigned int irq_shift;
@@ -50,13 +51,15 @@ void serial_open(unsigned int baud_rate)
   uart->uxSta.reg  = (1 << _UARTSTA_UTXEN) + (1 << _UARTSTA_URXEN);
 }
 
-void serial_close(void)
+void
+serial_close(void)
 {
   interrupt_enable_control->clr = error_bit | rx_bit | tx_bit;
   uart->uxMode.reg = 0;
 }
 
-void __ISR(_SER0_VECTOR, _SER0_IPL_ISR) serial0_interrupt_handler(void)
+void __ISR(_SER0_VECTOR, _SER0_IPL_ISR)
+serial0_interrupt_handler(void)
 {
   unsigned int flags = interrupt_flags->reg;
 

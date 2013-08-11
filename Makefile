@@ -35,7 +35,8 @@ C_SOURCES = \
   mpide/hardware/pic32/cores/pic32/wiring_digital.c \
   serial.c
 CC_SOURCES = \
-  main.cc
+  main.cc \
+  motor.cc
 OBJECTS = $(AS_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CC_SOURCES:.cc=.o)
 LDADD = \
   mpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/libmchp_peripheral_$(CPUTYPE).a \

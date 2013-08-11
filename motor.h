@@ -3,15 +3,29 @@
 
 #include "protocol.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class motor
+{
+public:
+  motor();
 
-void motor_process_request(const struct motor_request* rx_buffer);
-void motor_generate_response(struct motor_response* tx_buffer);
+  void set_sensor_pins(int a, int b, int c);
 
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
+  int read_orientation();
+
+  void update();
+
+  void reset();
+
+  unsigned int odometer() const { return odometer_; }
+
+  void set_power(signed short power) { power_ = power; }
+
+private:
+  unsigned int odometer_;
+  int orientation_;
+
+  int sensor_a_, sensor_b_, sensor_c_;
+  signed short power_;
+};
 
 #endif /* !MOTOR_H_ */

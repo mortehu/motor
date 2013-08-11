@@ -1,10 +1,26 @@
+#ifndef SERIAL_H_
+#define SERIAL_H_ 1
+
+#include "protocol.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void serial_open(unsigned int baud_rate);
-void serial_close(void);
+void
+serial_open(unsigned int baud_rate);
+
+void
+serial_close(void);
+
+void
+motor_process_request(const struct motor_request* rx_buffer);
+
+void
+motor_generate_response(struct motor_response* tx_buffer);
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#endif /* !SERIAL_H_ */
