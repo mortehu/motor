@@ -5,6 +5,8 @@
  *  1. PIC32MX3XX/4XX Datasheet, Preliminary, 2008 Microchip Technology Inc
  */
 
+#include "serial.h"
+
 #define OPT_BOARD_INTERNAL
 #include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/p32xxxx.h"
 #include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/proc/p32mx320f128l.h"
@@ -12,7 +14,6 @@
 #include "mpide/hardware/pic32/cores/pic32/p32_defs.h"
 
 #include "hardware.h"
-#include "serial.h"
 
 static p32_uart* const    uart =                     (p32_uart *) _SER0_BASE;
 static p32_regset* const  interrupt_flags =          (p32_regset *) &IFS0 + (_SER0_IRQ / 32);

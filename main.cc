@@ -12,9 +12,6 @@ main()
 
   serial_open(115200);
 
-  pinMode(PIN_LED1, OUTPUT);
-  pinMode(PIN_LED2, OUTPUT);
-
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
@@ -24,15 +21,6 @@ main()
 
   for (;;)
     {
-      /* Health indicator */
-      digitalWrite(PIN_LED1, (millis() >> 9) & 1);
-
-      /*  012345
-          _XXX__
-          __XXX_
-          ___XXX
-       */
-
       /* Odometer indicator */
       unsigned int x = motors[0].odometer() % 6;
       digitalWrite(5, (x >= 1 && x <= 3));
