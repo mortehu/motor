@@ -10,7 +10,25 @@ SYSTEM_GNU=0
 
 case "$host" in
   *-arduino-*)
-    AC_MSG_ERROR([Arduino support is missing.])
+    case "$host_cpu" in
+      avr)
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
+        CPPFLAGS="$CPPFLAGS -D__AVR_ATmega2560__"
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
+        CFLAGS="$CFLAGS -mmcu=atmega2560"
+        CC=avr-gcc
+        CXX=avr-c++
+        LD=avr-ld
+        RANLIB=avr-ranlib
+
+        AC_DEFINE(F_CPU, 16000000UL)
+        SYSTEM_ARDUINO=1
+        ;;
+
+      *)
+        AC_MSG_ERROR([Unsupported Arduino CPU type '$host_cpu'])
+        ;;
+    esac
     ;;
 
   *-pic32-*)
@@ -25,7 +43,7 @@ case "$host" in
         CXXFLAGS="$CXXFLAGS -mno-smart-io -mprocessor=$CPUTYPE"
         CCASFLAGS="$CCASFLAGS -mprocessor=$(CPUTYPE)"
         CPPFLAGS="$CPPFLAGS -Impide/hardware/pic32/variants/Uno32"
-        CPPFLAGS="$CPPFLAGS -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$CPUTYPE"
+        LDFLAGS="$CPPFLAGS -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$CPUTYPE"
         LDFLAGS="$LDFLAGS -Tmpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$CPUTYPE.ld"
 
         BIN2HEX=$TOOLCHAIN_PREFIX/bin/pic32-bin2hex
@@ -65,6 +83,7 @@ AC_PATH_PROG(AVRDUDE, avrdude)
 AC_SUBST(BIN2HEX)
 AC_SUBST(CPUTYPE)
 
+AM_CONDITIONAL(SYSTEM_ARDUINO, [test $SYSTEM_ARDUINO = 1])
 AM_CONDITIONAL(SYSTEM_UNO32, [test $SYSTEM_UNO32 = 1])
 AM_CONDITIONAL(SYSTEM_GNU, [test $SYSTEM_GNU = 1])
 

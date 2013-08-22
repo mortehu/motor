@@ -8,11 +8,15 @@ AM_LDFLAGS = -Wl,--gc-sections
 motor_elf_SOURCES = \
   main.cc \
   motor.cc
-motor_elf_LDADD = libplatform.a
+
+if SYSTEM_ARDUINO
+AM_CPPFLAGS = -DSYSTEM_ARDUINO=1
+endif
 
 if SYSTEM_UNO32
 noinst_DATA = motor.hex
 AM_CPPFLAGS = -DSYSTEM_UNO32=1
+motor_elf_LDADD = libplatform.a
 libplatform_a_SOURCES = \
   mpide/hardware/pic32/cores/pic32/pins_arduino.c \
   mpide/hardware/pic32/cores/pic32/task_manager.c \
@@ -30,6 +34,7 @@ endif
 
 if SYSTEM_GNU
 AM_CPPFLAGS = -DSYSTEM_GNU=1
+motor_elf_LDADD = libplatform.a
 libplatform_a_SOURCES = \
   hardware.cc \
   serial_linux.c
