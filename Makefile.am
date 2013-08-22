@@ -29,7 +29,7 @@ SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
 AVRDUDEFLAGS=-Cmpide/hardware/tools/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
 
 install-data-local:
-	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:main.hex:i
+	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:motor.hex:i
 endif
 
 if SYSTEM_GNU
