@@ -1,15 +1,17 @@
 Brushless DC electric motor controller
 ======================================
 
-Implements a controller for three phase BLDC motors, for the chipKIT Uno32
-prototyping platform.
+Implements a controller for three phase BLDC motors.
 
-The source code and Makefile expects MPIDE to be avaiable under the mpide/
-subdirectory.  As of 2013-07-24, it can be found at:
+To build this package for chipKIT Uno32, run:
 
-https://github.com/downloads/chipKIT32/chipKIT32-MAX/mpide-0023-linux-20120903.tgz
+    wget https://github.com/downloads/chipKIT32/chipKIT32-MAX/mpide-0023-linux-20120903.tgz
+    tar zxf mpide-0023-linux-20120903.tgz
+    ./configure --host=mips-pic32-none \
+      --with-mpide-path=mpide-0023-linux-2012090
+    make
 
-To build this package, run:
+To build this package for Arduino Mega 2560, run:
 
-  ./configure --host=mips-pic32-none
-  make
+    ./configure --host=avr-arduino_mega2560-none
+    make

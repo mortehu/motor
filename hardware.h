@@ -4,9 +4,9 @@
 #if defined(SYSTEM_ARDUINO)
 #  include <Arduino.h>
 #elif defined(SYSTEM_UNO32)
-#  include "mpide/hardware/pic32/cores/pic32/System_Defs.h"
-#  include "mpide/hardware/pic32/variants/Uno32/Board_Defs.h"
-#  include "mpide/hardware/pic32/cores/pic32/wiring.h"
+#  include <System_Defs.h>
+#  include <Board_Defs.h>
+#  include <wiring.h>
 #elif defined(SYSTEM_GNU)
 #  include <stdint.h>
 

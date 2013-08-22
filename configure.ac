@@ -5,36 +5,50 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_CANONICAL_HOST
 
+SYSTEM_ARDUINO=0
 SYSTEM_UNO32=0
 SYSTEM_GNU=0
 
+WIRING_DEFAULT_PATH=wiring
+
+AC_ARG_WITH([mpide-path],
+            [AS_HELP_STRING([--with-mpide-path],
+                            [location of the MPIDE])],
+            [MPIDE_PATH="$withval"],
+            [MPIDE_PATH="mpide"])
+
 case "$host" in
-  *-arduino-*)
-    case "$host_cpu" in
-      avr)
-        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
-        CPPFLAGS="$CPPFLAGS -D__AVR_ATmega2560__"
+  avr-*-*)
+    CC=avr-gcc
+    CXX=avr-c++
+    LD=avr-ld
+    RANLIB=avr-ranlib
+
+    case "$host_vendor" in
+      arduino_mega2560)
         CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
         CFLAGS="$CFLAGS -mmcu=atmega2560"
-        CC=avr-gcc
-        CXX=avr-c++
-        LD=avr-ld
-        RANLIB=avr-ranlib
+        CXXFLAGS="$CXXFLAGS -mmcu=atmega2560"
+        WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino
 
         AC_DEFINE(F_CPU, 16000000UL)
         SYSTEM_ARDUINO=1
         ;;
 
       *)
-        AC_MSG_ERROR([Unsupported Arduino CPU type '$host_cpu'])
+        AC_MSG_ERROR([Unsupported AVR host vendor '$host_vendor'])
         ;;
     esac
     ;;
 
   *-pic32-*)
-    TOOLCHAIN_PREFIX=mpide/hardware/pic32/compiler/pic32-tools
-    CPPFLAGS="$CPPFLAGS -Impide/hardware/pic32/libraries/Wire/utility"
-    CPPFLAGS="$CPPFLAGS -Impide/hardware/pic32/cores/pic32"
+    WIRING_DEFAULT_PATH="$MPIDE_PATH/hardware/pic32/cores/pic32"
+    TOOLCHAIN_PREFIX="$MPIDE_PATH/hardware/pic32/compiler/pic32-tools"
+    CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/hardware/pic32/libraries/Wire/utility"
+    CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/hardware/pic32/cores/pic32"
+    CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/hardware/pic32/variants/Uno32"
+    CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/pic32/compiler/pic32-tools/pic32mx/include"
 
     case "$host_cpu" in
       mips)
@@ -42,9 +56,9 @@ case "$host" in
         CFLAGS="$CFLAGS -mno-smart-io -mprocessor=$CPUTYPE"
         CXXFLAGS="$CXXFLAGS -mno-smart-io -mprocessor=$CPUTYPE"
         CCASFLAGS="$CCASFLAGS -mprocessor=$(CPUTYPE)"
-        CPPFLAGS="$CPPFLAGS -Impide/hardware/pic32/variants/Uno32"
-        LDFLAGS="$CPPFLAGS -Lmpide/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$CPUTYPE"
-        LDFLAGS="$LDFLAGS -Tmpide/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$CPUTYPE.ld"
+        CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/hardware/pic32/variants/Uno32"
+        LDFLAGS="$CPPFLAGS -L$MPIDE_PATH/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$CPUTYPE"
+        LDFLAGS="$LDFLAGS -T$MPIDE_PATH/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$CPUTYPE.ld"
 
         BIN2HEX=$TOOLCHAIN_PREFIX/bin/pic32-bin2hex
         CC=$TOOLCHAIN_PREFIX/bin/pic32-gcc
@@ -71,6 +85,12 @@ case "$host" in
     ;;
 esac
 
+AC_ARG_WITH([wiring-path],
+            [AS_HELP_STRING([--with-wiring-path],
+                            [location of the Wiring source files and headers])],
+            [WIRING_PATH="$withval"],
+            [WIRING_PATH="$WIRING_DEFAULT_PATH"])
+
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
@@ -79,10 +99,13 @@ AM_PROG_AS
 AC_C_BIGENDIAN
 
 AC_PATH_PROG(AVRDUDE, avrdude)
+AC_PATH_PROG(OBJCOPY, objcopy)
 
 AC_SUBST(BIN2HEX)
 AC_SUBST(CPUTYPE)
 
+AC_SUBST(MPIDE_PATH)
+AC_SUBST(WIRING_PATH)
 AM_CONDITIONAL(SYSTEM_ARDUINO, [test $SYSTEM_ARDUINO = 1])
 AM_CONDITIONAL(SYSTEM_UNO32, [test $SYSTEM_UNO32 = 1])
 AM_CONDITIONAL(SYSTEM_GNU, [test $SYSTEM_GNU = 1])

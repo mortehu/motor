@@ -8,10 +8,10 @@
 #include "serial.h"
 
 #define OPT_BOARD_INTERNAL
-#include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/p32xxxx.h"
-#include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/proc/p32mx320f128l.h"
-#include "mpide/hardware/pic32/compiler/pic32-tools/pic32mx/include/sys/attribs.h"
-#include "mpide/hardware/pic32/cores/pic32/p32_defs.h"
+#include <p32xxxx.h>
+#include <proc/p32mx320f128l.h>
+#include <sys/attribs.h>
+#include <p32_defs.h>
 
 #include "hardware.h"
 
