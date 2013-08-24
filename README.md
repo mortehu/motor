@@ -15,3 +15,8 @@ To build this package for Arduino Mega 2560, run:
 
     ./configure --host=avr-arduino_mega2560-none
     make
+
+To build this package for Arduino Uno, run:
+
+    ./configure --host=avr-arduino_uno-none
+    make

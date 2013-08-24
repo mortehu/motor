@@ -10,6 +10,7 @@ SYSTEM_UNO32=0
 SYSTEM_GNU=0
 
 WIRING_DEFAULT_PATH=wiring
+AVRDUDE_ARGS=
 
 AC_ARG_WITH([mpide-path],
             [AS_HELP_STRING([--with-mpide-path],
@@ -31,6 +32,19 @@ case "$host" in
         CFLAGS="$CFLAGS -mmcu=atmega2560"
         CXXFLAGS="$CXXFLAGS -mmcu=atmega2560"
         WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino
+        AVRDUDE_ARGS="-c stk500v2 -p m2560"
+
+        AC_DEFINE(F_CPU, 16000000UL)
+        SYSTEM_ARDUINO=1
+        ;;
+
+      arduino_uno)
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/standard"
+        CFLAGS="$CFLAGS -mmcu=atmega328p"
+        CXXFLAGS="$CXXFLAGS -mmcu=atmega328p"
+        WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino
+        AVRDUDE_ARGS="-c arduino -p m328p"
 
         AC_DEFINE(F_CPU, 16000000UL)
         SYSTEM_ARDUINO=1
@@ -59,6 +73,7 @@ case "$host" in
         CPPFLAGS="$CPPFLAGS -I$MPIDE_PATH/hardware/pic32/variants/Uno32"
         LDFLAGS="$CPPFLAGS -L$MPIDE_PATH/hardware/pic32/compiler/pic32-tools/pic32mx/lib/proc/$CPUTYPE"
         LDFLAGS="$LDFLAGS -T$MPIDE_PATH/hardware/pic32/cores/pic32/chipKIT-UNO32-application-$CPUTYPE.ld"
+        AVRDUDE_ARGS="-c stk500v2 -p pic32"
 
         BIN2HEX=$TOOLCHAIN_PREFIX/bin/pic32-bin2hex
         CC=$TOOLCHAIN_PREFIX/bin/pic32-gcc
@@ -103,6 +118,7 @@ AC_PATH_PROG(OBJCOPY, objcopy)
 
 AC_SUBST(BIN2HEX)
 AC_SUBST(CPUTYPE)
+AC_SUBST(AVRDUDE_ARGS)
 
 AC_SUBST(MPIDE_PATH)
 AC_SUBST(WIRING_PATH)

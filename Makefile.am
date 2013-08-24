@@ -19,8 +19,8 @@ libplatform_a_SOURCES = \
   $(WIRING_PATH)/wiring_digital.c \
   serial_arduino.c
 
-SERIAL_PORT=/dev/serial/by-id/usb-Arduino__www.arduino.cc__0042_8523136323635130C061-if00
-AVRDUDEFLAGS=-c stk500v2 -p m2560 -P $(SERIAL_PORT) -b 115200 -v -U
+SERIAL_PORT=/dev/serial/by-id/usb-Arduino_*-if00
+AVRDUDEFLAGS=$(AVRDUDE_ARGS) -P $(SERIAL_PORT) -b 115200 -v -U
 
 install-data-local:
 	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:motor.hex:i
@@ -41,7 +41,7 @@ libplatform_a_SOURCES = \
   serial_uno32.c
 
 SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
-AVRDUDEFLAGS=-C$(MPIDE_PATH)/hardware/tools/avrdude.conf -c stk500v2 -p pic32 -P $(SERIAL_PORT) -b 115200 -v -U
+AVRDUDEFLAGS=-C$(MPIDE_PATH)/hardware/tools/avrdude.conf $(AVRDUDE_ARGS) -P $(SERIAL_PORT) -b 115200 -v -U
 
 install-data-local:
 	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:motor.hex:i
