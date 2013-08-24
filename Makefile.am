@@ -19,6 +19,12 @@ libplatform_a_SOURCES = \
   $(WIRING_PATH)/wiring_digital.c \
   serial_arduino.c
 
+SERIAL_PORT=/dev/serial/by-id/usb-Arduino__www.arduino.cc__0042_8523136323635130C061-if00
+AVRDUDEFLAGS=-c stk500v2 -p m2560 -P $(SERIAL_PORT) -b 115200 -v -U
+
+install-data-local:
+	$(AVRDUDE) $(AVRDUDEFLAGS) flash:w:motor.hex:i
+
 motor.hex: motor.elf
 	$(AM_V_GEN)$(OBJCOPY) -O ihex $< $@
 endif
