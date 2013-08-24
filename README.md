@@ -1,7 +1,5 @@
-Brushless DC electric motor controller
-======================================
-
-Implements a controller for three phase BLDC motors.
+Brushless DC electric motor controller test program
+===================================================
 
 To build this package for chipKIT Uno32, run:
 
