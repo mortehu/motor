@@ -12,9 +12,6 @@ main()
 
   serial_open(115200);
 
-  pinMode(PIN_LED1, OUTPUT);
-  pinMode(PIN_LED2, OUTPUT);
-
   motors[0].set_pwm_pin(9);
   motors[0].set_sensor_pins(A0, A1, A2);
   motors[0].set_output_pins(2, 3, 4);
@@ -25,11 +22,6 @@ main()
 
   for (;;)
     {
-      /* Odometer indicator */
-      unsigned int x = motors[0].odometer() % 5;
-      digitalWrite(PIN_LED1, (x >= 1 && x <= 2));
-      digitalWrite(PIN_LED2, (x >= 2 && x <= 3));
-
       motors[0].update();
       motors[1].update();
     }
