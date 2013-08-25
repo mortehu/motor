@@ -29,7 +29,7 @@ static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((alig
 static unsigned int rx_fill;
 
 void
-serial_open(unsigned int baud_rate)
+serial_open(uint32_t baud_rate)
 {
   p32_regset *interrupt_priority_control;
   unsigned int irq_shift;

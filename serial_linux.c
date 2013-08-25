@@ -1,7 +1,7 @@
 #include "serial.h"
 
 void
-serial_open(unsigned int baud_rate)
+serial_open(uint32_t baud_rate)
 {
 }
 

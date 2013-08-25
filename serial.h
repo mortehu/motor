@@ -1,6 +1,8 @@
 #ifndef SERIAL_H_
 #define SERIAL_H_ 1
 
+#include <stdint.h>
+
 #include "protocol.h"
 
 #ifdef __cplusplus
@@ -8,7 +10,7 @@ extern "C" {
 #endif
 
 void
-serial_open(unsigned int baud_rate);
+serial_open(uint32_t baud_rate);
 
 void
 serial_close(void);
