@@ -22,17 +22,21 @@ static const unsigned int error_bit =                1 << (_SER0_IRQ % 32);
 static const unsigned int rx_bit =                   1 << ((_SER0_IRQ + 1) % 32);
 static const unsigned int tx_bit =                   1 << ((_SER0_IRQ + 2) % 32);
 
-static unsigned char tx_buffer[sizeof(struct motor_response)] __attribute__((aligned(4)));
-static unsigned int tx_remaining;
+static unsigned char tx_buffer[MAX_MESSAGE_SIZE] __attribute__((aligned(4)));
+static uint16_t tx_size, tx_offset;
 
-static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((aligned(4)));
-static unsigned int rx_fill;
+static rx_callback rx;
+static tx_callback tx;
 
 void
-serial_open(uint32_t baud_rate)
+serial_open(uint32_t baud_rate, rx_callback rx_, tx_callback tx_)
 {
   p32_regset *interrupt_priority_control;
   unsigned int irq_shift;
+  unsigned int enable_flags = 0;
+
+  rx = rx_;
+  tx = tx_;
 
   interrupt_priority_control = ((p32_regset *) &IPC0) + (_SER0_VECTOR / 4);
   irq_shift = 8 * (_SER0_VECTOR % 4);
@@ -47,7 +51,13 @@ serial_open(uint32_t baud_rate)
   /* 8-bit data mode.  See Example 19-2.[1]  */
   uart->uxBrg.reg  = __PIC32_pbClk / 16 / baud_rate - 1; /* Example 19-1.[1]  */
   uart->uxMode.reg = (1 << _UARTMODE_ON);
-  uart->uxSta.reg  = (1 << _UARTSTA_UTXEN) + (1 << _UARTSTA_URXEN);
+
+  if (rx)
+    enable_flags |= (1 << _UARTSTA_URXEN);
+  if (tx)
+    enable_flags |= (1 << _UARTSTA_UTXEN);
+
+  uart->uxSta.reg = enable_flags;
 }
 
 void
@@ -65,17 +75,11 @@ serial0_interrupt_handler(void)
   /* Receive.  See Example 19-5.[1]  */
   if (0 != (flags & rx_bit))
     {
-      rx_buffer[rx_fill++] = uart->uxRx.reg;
+      unsigned char ch;
+      ch = uart->uxRx.reg;
 
-      /* Perform simple byte synchronization.  */
-      if (rx_buffer[0] != 0xff)
-        rx_fill = 0;
-
-      if (rx_fill == sizeof(rx_buffer))
-        {
-          motor_process_request((const struct motor_request *) rx_buffer);
-          rx_fill = 0;
-        }
+      if (rx)
+        rx (ch);
 
       interrupt_flags->clr = rx_bit;
     }
@@ -83,20 +87,20 @@ serial0_interrupt_handler(void)
   /* Transmit.  See Section 19.3.[1]  */
   if (0 != (flags & tx_bit))
     {
-      volatile unsigned char ch;
+      unsigned char ch;
 
-      if (!tx_remaining)
+      if (tx_offset == tx_size)
         {
-          motor_generate_response((struct motor_response *) tx_buffer);
-          tx_remaining = sizeof(tx_buffer);
+          tx_offset = 0;
+          tx_size = 0;
+          tx(tx_buffer, &tx_size);
         }
 
-      ch = tx_buffer[sizeof(tx_buffer) - tx_remaining];
+      ch = tx_buffer[tx_offset++];
 
       interrupt_flags->clr = tx_bit;
 
       uart->uxTx.reg = ch;
-      --tx_remaining;
     }
 
   if (0 != (flags & error_bit))
