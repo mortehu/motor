@@ -98,6 +98,12 @@ main (int argc, char **argv)
   write_all (fd, &req, sizeof(req));
   write_all (fd, &req, sizeof(req));
 
+  req.sync = 0xff;
+  req.type = MOTOR_REQ_POWER;
+  req.u.power.motor0_power = 64;
+  req.u.power.motor1_power = 0;
+  write_all (fd, &req, sizeof(req));
+
   for (;;)
     {
       unsigned char buffer[sizeof(struct motor_response)];

@@ -107,12 +107,18 @@ motor::read_orientation()
 void
 motor::commutate(int orientation)
 {
-  if (power_ <= 0 || orientation == -1)
+  if (power_ == 0)
     {
       analogWrite(pwm_, 0);
       pinMode(output_a_, OUTPUT); digitalWrite(output_a_, 0);
       pinMode(output_b_, OUTPUT); digitalWrite(output_b_, 0);
       pinMode(output_c_, OUTPUT); digitalWrite(output_c_, 0);
+    }
+  else if (orientation == -1)
+    {
+      pinMode(output_a_, INPUT);
+      pinMode(output_b_, INPUT);
+      pinMode(output_c_, INPUT);
     }
   else
     {
@@ -126,7 +132,14 @@ motor::commutate(int orientation)
             {  0, -1,  1 },
         };
 
-      analogWrite(pwm_, power_ >> 7);
+      unsigned char effective_power;
+
+      if (power_ < 0)
+        effective_power = -power_;
+      else
+        effective_power = power_;
+
+      analogWrite(pwm_, effective_power);
 
       switch (force[orientation][0])
         {
