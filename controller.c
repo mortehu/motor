@@ -90,7 +90,7 @@ main (int argc, char **argv)
   if (tcsetattr (fd, TCSANOW, &tty) != 0)
     err(EXIT_FAILURE, "tcsetattr failed");
 
-  req.sync = 0xff;
+  req.sync = MOTOR_SYNC_BYTE;
   req.type = MOTOR_REQ_HELLO;
   req.u.hello.magic_a = (MOTOR_MAGIC_A);
   req.u.hello.magic_b = (MOTOR_MAGIC_B);
@@ -99,7 +99,7 @@ main (int argc, char **argv)
   write_all (fd, &req, sizeof(req));
   write_all (fd, &req, sizeof(req));
 
-  req.sync = 0xff;
+  req.sync = MOTOR_SYNC_BYTE;
   req.type = MOTOR_REQ_POWER;
   req.u.power.motor0_power = 32;
   req.u.power.motor1_power = 32;
@@ -116,7 +116,7 @@ main (int argc, char **argv)
           if (1 != read(fd, &buffer[fill++], 1))
             err(EXIT_FAILURE, "Read error");
 
-          if (buffer[0] != 0xff)
+          if (buffer[0] != MOTOR_SYNC_BYTE)
             fill = 0;
         }
 

@@ -4,6 +4,8 @@
 #define MOTOR_MAGIC_A 0xd4bb
 #define MOTOR_MAGIC_B 0xeed5
 
+#define MOTOR_SYNC_BYTE 0xfe
+
 enum motor_request_id
 {
   MOTOR_REQ_HELLO = 0x00,
@@ -19,7 +21,7 @@ enum motor_response_id
 
 struct motor_request
 {
-  unsigned char sync; /* 0xff */
+  unsigned char sync; /* MOTOR_SYNC_BYTE */
   unsigned char type;
 
   union

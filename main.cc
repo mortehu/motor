@@ -65,7 +65,7 @@ motor_process_request(const struct motor_request* rx_buffer)
 void
 motor_generate_response(struct motor_response* tx_buffer)
 {
-  tx_buffer->sync = 0xff;
+  tx_buffer->sync = MOTOR_SYNC_BYTE;
 
   if (expecting_hello)
     {
