@@ -101,15 +101,13 @@ SIGNAL(RX_SIGNAL)
 
   rx_buffer[rx_fill++] = ch;
 
-  /* Perform simple byte synchronization.  */
-  if (rx_buffer[0] != 0xff)
-    rx_fill = 0;
-
   if (rx_fill == sizeof(rx_buffer))
     {
       motor_process_request((const struct motor_request *) rx_buffer);
       rx_fill = 0;
     }
+  else if (rx_buffer[0] != 0xff)
+    rx_fill = 0;
 }
 
 SIGNAL(TX_SIGNAL)

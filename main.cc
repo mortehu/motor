@@ -76,7 +76,7 @@ motor_generate_response(struct motor_response* tx_buffer)
   else if (expecting_error)
     {
       tx_buffer->type = MOTOR_RESP_ERROR;
-      tx_buffer->u.error.reserved0 = expecting_error;
+      tx_buffer->u.error.reserved0 = 0;
       tx_buffer->u.error.reserved1 = 0;
       expecting_error = 0;
     }

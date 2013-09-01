@@ -11,8 +11,6 @@
 
 #include "protocol.h"
 
-#define TTY "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0"
-
 static void
 write_all (int fd, const void *buffer, size_t size)
 {
@@ -69,8 +67,11 @@ main (int argc, char **argv)
   struct motor_request req;
   struct termios tty;
 
-  if (-1 == (fd = open(TTY, O_RDWR | O_NOCTTY)))
-    err(EXIT_FAILURE, "Failed to open '%s' in read/write mode", TTY);
+  if (argc != 2)
+    errx(EX_USAGE, "Usage: %s TTY", argv[0]);
+
+  if (-1 == (fd = open(argv[1], O_RDWR | O_NOCTTY)))
+    err(EXIT_FAILURE, "Failed to open '%s' in read/write mode", argv[1]);
 
   if (-1 == tcflush(fd, TCIFLUSH))
     err(EXIT_FAILURE, "tcflush failed");
@@ -100,8 +101,9 @@ main (int argc, char **argv)
 
   req.sync = 0xff;
   req.type = MOTOR_REQ_POWER;
-  req.u.power.motor0_power = 64;
-  req.u.power.motor1_power = 0;
+  req.u.power.motor0_power = 32;
+  req.u.power.motor1_power = 32;
+
   write_all (fd, &req, sizeof(req));
 
   for (;;)
