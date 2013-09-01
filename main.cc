@@ -20,7 +20,7 @@ main()
   motors[0].set_output_pins(2, 3, 4);
 
   motors[1].set_pwm_pin(10);
-  motors[1].set_sensor_pins(A3, A4, A5);
+  motors[1].set_sensor_pins(A5, A4, A3);
   motors[1].set_output_pins(5, 6, 7);
 
   for (;;)
