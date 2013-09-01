@@ -111,9 +111,9 @@ motor::commutate(int orientation)
   if (power_ == 0)
     {
       analogWrite(pwm_, 0);
-      pinMode(output_a_, OUTPUT); digitalWrite(output_a_, 0);
-      pinMode(output_b_, OUTPUT); digitalWrite(output_b_, 0);
-      pinMode(output_c_, OUTPUT); digitalWrite(output_c_, 0);
+      digitalWrite(output_a_, 0); pinMode(output_a_, OUTPUT);
+      digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT);
+      digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT);
     }
   else if (orientation == -1)
     {
