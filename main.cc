@@ -12,6 +12,9 @@ main()
 
   serial_open(115200);
 
+  /* Set PWM frequency to 31.25 kHz.  */
+  TCCR1B &= 0xf8 | 0x01;
+
   motors[0].set_pwm_pin(9);
   motors[0].set_sensor_pins(A0, A1, A2);
   motors[0].set_output_pins(2, 3, 4);
