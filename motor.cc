@@ -2,7 +2,7 @@
 #include "motor.h"
 
 /* HALL_SENSOR_THRESHOLD is specified in multiples of of 4.9 mV. */
-#define HALL_SENSOR_THRESHOLD 10 /* 49 mV */
+#define HALL_SENSOR_THRESHOLD 510  /* 2.5 V */
 
 motor::motor()
 {
