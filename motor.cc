@@ -48,9 +48,11 @@ motor::update()
     {
       if (orientation_ != -1)
         {
-          if ((orientation_ + 1) % 6 == new_orientation)
+          if (orientation_ + 1 == new_orientation ||
+              orientation_ == new_orientation - 1)
             ++odometer_;
-          else if ((new_orientation + 1) % 6 == orientation_)
+          else if (new_orientation + 1 == orientation_ ||
+                   new_orientation == orientation_ - 1)
             --odometer_;
         }
 
