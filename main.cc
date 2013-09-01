@@ -5,12 +5,21 @@
 static struct motor motors[2];
 static int expecting_hello, expecting_error;
 
+static void
+process_request(unsigned char ch);
+
+static void
+generate_response(void *buffer, uint16_t *size);
+
+static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((aligned(4)));
+static unsigned int rx_fill;
+
 int
 main()
 {
   init();
 
-  serial_open(115200);
+  serial_open(115200, process_request, generate_response);
 
   /* Set PWM frequency to 31.25 kHz.  */
   TCCR1B &= 0xf8 | 0x01;
@@ -30,15 +39,30 @@ main()
     }
 }
 
-void
-motor_process_request(const struct motor_request* rx_buffer)
+static void
+process_request(unsigned char ch)
 {
-  switch (rx_buffer->type)
+  rx_buffer[rx_fill++] = ch;
+
+  if (rx_buffer[0] == MOTOR_SYNC_BYTE)
+    {
+      rx_fill = 0;
+
+      return;
+    }
+
+  if (rx_fill != sizeof(rx_buffer))
+    return;
+
+  struct motor_request *request
+    = reinterpret_cast<struct motor_request*>(rx_buffer);
+
+  switch (request->type)
     {
     case MOTOR_REQ_HELLO:
 
-      if (rx_buffer->u.hello.magic_a != MOTOR_MAGIC_A ||
-          rx_buffer->u.hello.magic_b != MOTOR_MAGIC_B)
+      if (request->u.hello.magic_a != MOTOR_MAGIC_A ||
+          request->u.hello.magic_b != MOTOR_MAGIC_B)
         {
           expecting_error = 2;
 
@@ -51,8 +75,8 @@ motor_process_request(const struct motor_request* rx_buffer)
 
     case MOTOR_REQ_POWER:
 
-      motors[0].set_power(rx_buffer->u.power.motor0_power);
-      motors[1].set_power(rx_buffer->u.power.motor1_power);
+      motors[0].set_power(request->u.power.motor0_power);
+      motors[1].set_power(request->u.power.motor1_power);
 
       break;
 
@@ -60,11 +84,17 @@ motor_process_request(const struct motor_request* rx_buffer)
 
       expecting_error = 1;
     }
+
+  rx_fill = 0;
 }
 
-void
-motor_generate_response(struct motor_response* tx_buffer)
+static void
+generate_response(void *buffer, uint16_t *size)
 {
+  struct motor_response* tx_buffer
+    = reinterpret_cast<struct motor_response*>(buffer);
+  *size = sizeof(*tx_buffer);
+
   tx_buffer->sync = MOTOR_SYNC_BYTE;
 
   if (expecting_hello)
