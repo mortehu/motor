@@ -56,7 +56,10 @@ motor::update()
         }
 
       orientation_ = new_orientation;
+      orientation_valid_ = 1;
     }
+  else
+    orientation_valid_ = 0;
 
   commutate(new_orientation);
 }
