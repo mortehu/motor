@@ -144,15 +144,13 @@ motor::commutate(int orientation)
       force_c = force[orientation][2];
 
       if (power_ > 0)
-        {
-          effective_power = power_;
-        }
+        effective_power = power_;
       else
         {
           force_a = -force_a;
           force_b = -force_b;
           force_c = -force_c;
-          effective_power = power_;
+          effective_power = -power_;
         }
 
       analogWrite(pwm_, effective_power);
