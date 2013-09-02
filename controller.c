@@ -117,8 +117,8 @@ user_input_thread (void *arg)
         case '8':
         case '9':
 
-          msg.u.speed.motor0_speed = (ch - '0') * 128 / 9;
-          msg.u.speed.motor1_speed = (ch - '0') * 128 / 9;
+          msg.u.speed.motor0_speed = (ch - '0') * 127 / 9;
+          msg.u.speed.motor1_speed = (ch - '0') * 127 / 9;
 
           break;
 
@@ -169,7 +169,6 @@ main (int argc, char **argv)
 
   if (tcsetattr (fd, TCSANOW, &tty) != 0)
     err(EXIT_FAILURE, "tcsetattr failed");
-
 
   /* Disable input buffering on standard input.  */
   tcgetattr(STDIN_FILENO, &tty);
