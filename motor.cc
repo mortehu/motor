@@ -78,8 +78,8 @@ int
 motor::read_orientation()
 {
   /* Hall sensors:  AA   A
-    *                 BBB
-    *                   CCC
+    *                BBB
+    *                  CCC
     *
     * Orientation:   Magnet:
     * 0              *
