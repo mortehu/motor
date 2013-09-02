@@ -21,7 +21,7 @@ public:
   int orientation_valid() const { return orientation_valid_; }
   signed short power() const { return power_; }
 
-  void set_power(signed short power) { power_ = power; }
+  void set_power(signed short power) { power_ = power; commutate(orientation_); }
 
 private:
   int read_orientation();
