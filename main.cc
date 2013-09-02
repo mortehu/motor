@@ -10,7 +10,7 @@ main()
 {
   init();
 
-  serial_open(115200);
+  serial_open(SERIAL_115200);
 
   motors[0].set_pwm_pin(9);
   motors[0].set_sensor_pins(A0, A1, A2);

@@ -29,10 +29,10 @@ static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((alig
 static unsigned int rx_fill;
 
 void
-serial_open(uint32_t baud_rate)
+serial_open(enum serial_baud_rate baud_rate)
 {
   p32_regset *interrupt_priority_control;
-  unsigned int irq_shift;
+  unsigned int irq_shift, rate_num;
 
   interrupt_priority_control = ((p32_regset *) &IPC0) + (_SER0_VECTOR / 4);
   irq_shift = 8 * (_SER0_VECTOR % 4);
@@ -44,8 +44,15 @@ serial_open(uint32_t baud_rate)
   interrupt_priority_control->set = ((_SER0_IPL << 2) + _SER0_SPL) << irq_shift;
   interrupt_enable_control->set = rx_bit | tx_bit | error_bit;
 
+  switch (baud_rate)
+    {
+    case SERIAL_57600: rate_num = 57600; break;
+    default:
+    case SERIAL_115200: rate_num = 115200;
+    }
+
   /* 8-bit data mode.  See Example 19-2.[1]  */
-  uart->uxBrg.reg  = __PIC32_pbClk / 16 / baud_rate - 1; /* Example 19-1.[1]  */
+  uart->uxBrg.reg  = __PIC32_pbClk / 16 / rate_num - 1; /* Example 19-1.[1]  */
   uart->uxMode.reg = (1 << _UARTMODE_ON);
   uart->uxSta.reg  = (1 << _UARTSTA_UTXEN) + (1 << _UARTSTA_URXEN);
 }

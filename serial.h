@@ -9,8 +9,14 @@
 extern "C" {
 #endif
 
+enum serial_baud_rate
+{
+  SERIAL_57600,
+  SERIAL_115200,
+};
+
 void
-serial_open(uint32_t baud_rate);
+serial_open(enum serial_baud_rate baud_rate);
 
 void
 serial_close(void);
