@@ -20,3 +20,8 @@ analogRead(uint8_t pin)
 {
   return 0;
 }
+
+void
+analogWrite(uint8_t pin, uint8_t value)
+{
+}

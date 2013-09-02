@@ -42,6 +42,9 @@ digitalWrite(uint8_t pin, uint8_t value);
 int
 analogRead(uint8_t pin);
 
+void
+analogWrite(uint8_t pin, uint8_t value);
+
 #  ifdef __cplusplus
 } /* extern "C" */
 #  endif

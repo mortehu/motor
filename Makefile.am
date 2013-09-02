@@ -6,6 +6,7 @@ AM_CXXFLAGS = -ffunction-sections -fdata-sections -O3 -Wall -fno-exceptions -fno
 AM_LDFLAGS = -Wl,--gc-sections
 
 motor_elf_SOURCES = \
+  crc8.c \
   main.cc \
   motor.cc
 motor_elf_LDADD = libplatform.a
