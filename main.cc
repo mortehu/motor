@@ -48,11 +48,14 @@ process_request(unsigned char ch)
 {
   rx_buffer[rx_fill++] = ch;
 
-  if (rx_buffer[0] == MOTOR_SYNC_BYTE0)
-    rx_fill = 0;
-  else if (rx_fill == 1)
+  if (rx_fill == 1)
     {
-      if (rx_buffer[0] != MOTOR_SYNC_BYTE1)
+      if (rx_buffer[0] != MOTOR_SYNC_BYTE0)
+        rx_fill = 0;
+    }
+  else if (rx_fill == 2)
+    {
+      if (rx_buffer[1] != MOTOR_SYNC_BYTE1)
         rx_fill = 0;
     }
   else if (rx_fill == sizeof(rx_buffer))
@@ -86,9 +89,9 @@ process_request(unsigned char ch)
 
           break;
         }
-    }
 
-  rx_fill = 0;
+      rx_fill = 0;
+    }
 }
 
 static void
