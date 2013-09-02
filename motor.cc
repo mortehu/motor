@@ -2,7 +2,7 @@
 #include "motor.h"
 
 /* HALL_SENSOR_THRESHOLD is specified in multiples of of 4.9 mV. */
-#define HALL_SENSOR_THRESHOLD 10 /* 49 mV */
+#define HALL_SENSOR_THRESHOLD 510  /* 2.5 V */
 
 motor::motor()
 {
@@ -15,6 +15,7 @@ motor::set_pwm_pin(int pin)
   analogWrite(pwm_ = pin, 0);
   pinMode(pwm_, OUTPUT);
 }
+
 void
 motor::set_output_pins(int a, int b, int c)
 {
@@ -57,7 +58,10 @@ motor::update()
         }
 
       orientation_ = new_orientation;
+      orientation_valid_ = 1;
     }
+  else
+    orientation_valid_ = 0;
 
   commutate(new_orientation);
 }
@@ -109,12 +113,19 @@ motor::read_orientation()
 void
 motor::commutate(int orientation)
 {
-  if (power_ <= 0 || orientation == -1)
+  if (power_ == 0)
     {
       analogWrite(pwm_, 0);
-      pinMode(output_a_, OUTPUT); digitalWrite(output_a_, 0);
-      pinMode(output_b_, OUTPUT); digitalWrite(output_b_, 0);
-      pinMode(output_c_, OUTPUT); digitalWrite(output_c_, 0);
+      digitalWrite(output_a_, 0); pinMode(output_a_, OUTPUT);
+      digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT);
+      digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT);
+    }
+  else if (orientation == -1)
+    {
+      analogWrite(pwm_, 0);
+      pinMode(output_a_, INPUT);
+      pinMode(output_b_, INPUT);
+      pinMode(output_c_, INPUT);
     }
   else
     {
@@ -127,28 +138,44 @@ motor::commutate(int orientation)
             { -1,  0,  1 },
             {  0, -1,  1 },
         };
+      signed char force_a, force_b, force_c;
+      unsigned char effective_power;
 
-      analogWrite(pwm_, power_ >> 7);
+      force_a = force[orientation][0];
+      force_b = force[orientation][1];
+      force_c = force[orientation][2];
 
-      switch (force[orientation][0])
+      if (power_ > 0)
+        effective_power = power_;
+      else
         {
-        case -1: digitalWrite(output_a_, 0); pinMode(output_a_, OUTPUT); break;
-        case  0: pinMode(output_a_, INPUT); break;
-        case  1: digitalWrite(output_a_, 1); pinMode(output_a_, OUTPUT); break;
+          force_a = -force_a;
+          force_b = -force_b;
+          force_c = -force_c;
+          effective_power = -power_;
         }
 
-      switch (force[orientation][1])
-        {
-        case -1: digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT); break;
-        case  0: pinMode(output_b_, INPUT); break;
-        case  1: digitalWrite(output_b_, 1); pinMode(output_b_, OUTPUT); break;
+      analogWrite(pwm_, effective_power);
+
+#define HANDLE_PIN(OUTPUT_PIN, VALUE) \
+      switch (VALUE) \
+        { \
+        case -1: \
+          digitalWrite(OUTPUT_PIN, 0); \
+          pinMode(OUTPUT_PIN, OUTPUT); \
+          break; \
+        case 0: \
+          pinMode(OUTPUT_PIN, INPUT); \
+          break; \
+        case 1: \
+          digitalWrite(OUTPUT_PIN, 1); \
+          pinMode(OUTPUT_PIN, OUTPUT); \
+          break; \
         }
 
-      switch (force[orientation][2])
-        {
-        case -1: digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT); break;
-        case  0: pinMode(output_c_, INPUT); break;
-        case  1: digitalWrite(output_c_, 1); pinMode(output_c_, OUTPUT); break;
-        }
+      HANDLE_PIN(output_a_, force_a)
+      HANDLE_PIN(output_b_, force_b)
+      HANDLE_PIN(output_c_, force_c)
+#undef HANDLE_PIN
     }
 }

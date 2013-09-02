@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,13 +6,24 @@
 #include <arpa/inet.h>
 #include <err.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <sysexits.h>
 #include <termios.h>
 #include <unistd.h>
 
+#include "crc8.h"
 #include "protocol.h"
 
-#define TTY "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0"
+static int fd;
+static int has_odometer;
+static uint32_t motor0_odometer, motor1_odometer;
+static uint32_t messages_received;
+
+static uint32_t motor0_requested_speed, motor1_requested_speed;
+
+static pthread_mutex_t display_mutex = PTHREAD_MUTEX_INITIALIZER;
+static int display_dirty = 1;
+static pthread_cond_t display_dirty_cond = PTHREAD_COND_INITIALIZER;
 
 static void
 write_all (int fd, const void *buffer, size_t size)
@@ -33,44 +45,113 @@ write_all (int fd, const void *buffer, size_t size)
     }
 }
 
-static void
-process_response (struct motor_response *resp)
+static void *
+reader_thread (void *arg)
 {
-  switch (resp->type)
+  for (;;)
     {
-    case MOTOR_RESP_HELLO:
+      struct motor_message message;
+      size_t fill = 0;
 
-      fprintf (stderr, "Hello\n");
+      while (fill < sizeof (message))
+        {
+          if (1 != read(fd, (char *) &message + fill, 1))
+            err(EXIT_FAILURE, "Read error");
 
-      break;
+          ++fill;
 
-    case MOTOR_RESP_ERROR:
+          if (fill == 1 && message.sync[0] != MOTOR_SYNC_BYTE0)
+            fill = 0;
+          else if (fill == 2 && message.sync[1] != MOTOR_SYNC_BYTE1)
+            fill = 0;
+        }
 
-      fprintf (stderr, "Error: %d\n", resp->u.error.reserved0);
+      pthread_mutex_lock (&display_mutex);
 
-      break;
+      switch (message.type)
+        {
+        case MOTOR_MSG_ODOMETER:
 
-    case MOTOR_RESP_ODOMETER:
+          motor0_odometer = message.u.odometer.motor0_odometer;
+          motor1_odometer = message.u.odometer.motor1_odometer;
+          has_odometer = 1;
 
-      fprintf (stderr, "Odometer: %04x %04x\n", resp->u.odometer.motor0_odometer, resp->u.odometer.motor1_odometer);
 
-      break;
+          break;
+        }
 
-    default:
+      ++messages_received;
+      display_dirty = 1;
 
-      fprintf (stderr, "[Unknown]\n");
+      pthread_cond_broadcast (&display_dirty_cond);
+
+      pthread_mutex_unlock (&display_mutex);
+
+
+      fill = 0;
     }
+}
+
+static void *
+user_input_thread (void *arg)
+{
+  int ch;
+
+  while (EOF != (ch = getchar ()))
+    {
+      struct motor_message msg;
+
+      msg.sync[0] = MOTOR_SYNC_BYTE0;
+      msg.sync[1] = MOTOR_SYNC_BYTE1;
+      msg.type = MOTOR_MSG_REQUEST_SPEED;
+
+      switch (ch)
+        {
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+
+          msg.u.speed.motor0_speed = (ch - '0') * 127 / 9;
+          msg.u.speed.motor1_speed = (ch - '0') * 127 / 9;
+
+          break;
+
+        default:
+        case ' ':
+
+          msg.u.speed.motor0_speed = 0;
+          msg.u.speed.motor1_speed = 0;
+
+          break;
+        }
+
+      msg.crc8 = crc8(&msg.type, sizeof(msg) - offsetof(struct motor_message, type));
+
+      write_all (fd, &msg, sizeof(msg));
+
+      motor0_requested_speed = msg.u.speed.motor0_speed;
+      motor1_requested_speed = msg.u.speed.motor1_speed;
+    }
+
+  return NULL;
 }
 
 int
 main (int argc, char **argv)
 {
-  int fd;
-  struct motor_request req;
   struct termios tty;
 
-  if (-1 == (fd = open(TTY, O_RDWR | O_NOCTTY)))
-    err(EXIT_FAILURE, "Failed to open '%s' in read/write mode", TTY);
+  if (argc != 2)
+    errx(EX_USAGE, "Usage: %s TTY", argv[0]);
+
+  if (-1 == (fd = open(argv[1], O_RDWR | O_NOCTTY)))
+    err(EXIT_FAILURE, "Failed to open '%s' in read/write mode", argv[1]);
 
   if (-1 == tcflush(fd, TCIFLUSH))
     err(EXIT_FAILURE, "tcflush failed");
@@ -89,32 +170,41 @@ main (int argc, char **argv)
   if (tcsetattr (fd, TCSANOW, &tty) != 0)
     err(EXIT_FAILURE, "tcsetattr failed");
 
-  req.sync = 0xff;
-  req.type = MOTOR_REQ_HELLO;
-  req.u.hello.magic_a = (MOTOR_MAGIC_A);
-  req.u.hello.magic_b = (MOTOR_MAGIC_B);
+  /* Disable input buffering on standard input.  */
+  tcgetattr(STDIN_FILENO, &tty);
+  tty.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW,&tty);
 
-  /* Write twice to force byte stream synchronization.  */
-  write_all (fd, &req, sizeof(req));
-  write_all (fd, &req, sizeof(req));
+  pthread_t reader_thread_handle;
+  pthread_create (&reader_thread_handle, NULL, reader_thread, NULL);
+  pthread_detach (reader_thread_handle);
+
+  pthread_t user_input_thread_handle;
+  pthread_create (&user_input_thread_handle, NULL, user_input_thread, NULL);
+  pthread_detach (user_input_thread_handle);
 
   for (;;)
     {
-      unsigned char buffer[sizeof(struct motor_response)];
-      size_t fill = 0;
+      pthread_mutex_lock (&display_mutex);
+      while (!display_dirty)
+        pthread_cond_wait (&display_dirty_cond, &display_mutex);
+      display_dirty = 0;
+      pthread_mutex_unlock (&display_mutex);
 
-      while (fill < sizeof (buffer))
+      printf ("\033[H\033[2J");
+
+      if (has_odometer)
         {
-          if (1 != read(fd, &buffer[fill++], 1))
-            err(EXIT_FAILURE, "Read error");
-
-          if (buffer[0] != 0xff)
-            fill = 0;
+          printf ("Odomoter A: %04x\n", motor0_odometer);
+          printf ("Odometer B: %04x\n", motor1_odometer);
         }
+      else
+        printf ("Missing odometry\n\n");
 
-      process_response((struct motor_response *) buffer);
+      printf ("Messages received: %u\n", messages_received);
 
-      fill = 0;
+      printf ("Motor A requested speed: %u\n", motor0_requested_speed);
+      printf ("Motor B requested speed: %u\n", motor1_requested_speed);
     }
 
   return EXIT_SUCCESS;

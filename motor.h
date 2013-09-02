@@ -18,9 +18,10 @@ public:
 
   unsigned int odometer() const { return odometer_; }
   int orientation() const { return orientation_; }
+  int orientation_valid() const { return orientation_valid_; }
   signed short power() const { return power_; }
 
-  void set_power(signed short power) { power_ = power; }
+  void set_power(signed short power) { power_ = power; commutate(orientation_); }
 
 private:
   int read_orientation();
@@ -29,6 +30,7 @@ private:
 
   unsigned int odometer_;
   int orientation_;
+  int orientation_valid_;
 
   int pwm_;
   int sensor_a_, sensor_b_, sensor_c_;

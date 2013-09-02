@@ -1,6 +1,5 @@
 #include "serial.h"
 
-#include "protocol.h"
 #include "Arduino.h"
 #include "wiring_private.h"
 
@@ -47,16 +46,14 @@
 #  error "Missing serial TX ISR macro"
 #endif
 
-static const uint32_t baud_rate = 115200;
+static unsigned char tx_buffer[MAX_MESSAGE_SIZE] __attribute__((aligned(4)));
+static uint16_t tx_size, tx_offset;
 
-static unsigned char tx_buffer[sizeof(struct motor_response)] __attribute__((aligned(4)));
-static unsigned int tx_remaining;
-
-static unsigned char rx_buffer[sizeof(struct motor_request)] __attribute__((aligned(4)));
-static unsigned int rx_fill;
+static rx_callback rx;
+static tx_callback tx;
 
 void
-serial_open(enum serial_baud_rate baud_rate)
+serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 {
   /* Allow missing the requested baud rate by 5%.  */
 #define BAUD_TOL 5
@@ -97,10 +94,19 @@ serial_open(enum serial_baud_rate baud_rate)
 
 #undef BAUD_TOL
 
+  rx = rx_;
+  tx = tx_;
+
   sbi(UCSRB, RXEN);
   sbi(UCSRB, TXEN);
-  sbi(UCSRB, RXCIE);
-  sbi(UCSRB, UDRIE);
+  if (rx_)
+    sbi(UCSRB, RXCIE);
+  else
+    cbi(UCSRB, RXCIE);
+  if (tx_)
+    sbi(UCSRB, UDRIE);
+  else
+    cbi(UCSRB, UDRIE);
 }
 
 void
@@ -114,33 +120,21 @@ serial_close(void)
 
 SIGNAL(RX_SIGNAL)
 {
-  unsigned char ch = UDR;
-
-  rx_buffer[rx_fill++] = ch;
-
-  /* Perform simple byte synchronization.  */
-  if (rx_buffer[0] != 0xff)
-    rx_fill = 0;
-
-  if (rx_fill == sizeof(rx_buffer))
-    {
-      motor_process_request((const struct motor_request *) rx_buffer);
-      rx_fill = 0;
-    }
+  rx(UDR);
 }
 
 SIGNAL(TX_SIGNAL)
 {
   unsigned char ch;
 
-  if (!tx_remaining)
+  if (tx_offset == tx_size)
     {
-      motor_generate_response((struct motor_response *) tx_buffer);
-      tx_remaining = sizeof(tx_buffer);
+      tx_offset = 0;
+      tx_size = 0;
+      tx(tx_buffer, &tx_size);
     }
 
-  ch = tx_buffer[sizeof(tx_buffer) - tx_remaining];
-  --tx_remaining;
+  ch = tx_buffer[tx_offset++];
 
   UDR = ch;
 }
