@@ -55,8 +55,8 @@ static tx_callback tx;
 void
 serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 {
-  /* Allow missing the requested baud rate by 5%.  */
-#define BAUD_TOL 5
+  /* Allow missing the requested baud rate by 2%.  */
+#define BAUD_TOL 2
 
   switch (baud_rate)
     {
