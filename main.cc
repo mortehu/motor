@@ -6,6 +6,7 @@
 static struct motor motors[2];
 static signed short motor0_requested_speed, motor1_requested_speed;
 static signed short motor0_max_acceleration, motor1_max_acceleration;
+static unsigned long motor_halt_timeout;
 
 static void
 process_request(unsigned char ch);
@@ -38,6 +39,12 @@ main()
 
   for (;;)
     {
+      if (millis() > motor_halt_timeout)
+        {
+          motors[0].reset();
+          motors[1].reset();
+        }
+
       motors[0].update();
       motors[1].update();
     }
@@ -77,6 +84,7 @@ process_request(unsigned char ch)
           motor0_requested_speed = request->u.speed.motor0_speed;
           motor1_requested_speed = request->u.speed.motor1_speed;
 
+          motor_halt_timeout = millis() + 500;
           motors[0].set_power(request->u.speed.motor0_speed);
           motors[1].set_power(-request->u.speed.motor1_speed);
 
