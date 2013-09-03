@@ -23,6 +23,10 @@ public:
 
   void set_power(signed short power) { power_ = power; commutate(orientation_); }
 
+#ifndef NDEBUG
+  void set_fet_mask(unsigned char mask) { fet_mask_ = mask; }
+#endif
+
 private:
   int read_orientation();
 
@@ -31,6 +35,8 @@ private:
   unsigned int odometer_;
   int orientation_;
   int orientation_valid_;
+
+  unsigned char fet_mask_;
 
   int pwm_;
   int sensor_a_, sensor_b_, sensor_c_;

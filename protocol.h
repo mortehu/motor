@@ -9,6 +9,7 @@ enum motor_message_id
   MOTOR_MSG_REQUEST_SPEED = 0x01,
   MOTOR_MSG_REQUEST_ACCELERATION = 0x02,
   MOTOR_MSG_ODOMETER = 0x03,
+  MOTOR_MSG_FET_MASK = 0x04,
 };
 
 struct motor_message
@@ -42,6 +43,12 @@ struct motor_message
           unsigned short motor0_odometer;
           unsigned short motor1_odometer;
         } odometer;
+
+      struct
+        {
+          unsigned char motor0_fet_mask;
+          unsigned char motor1_fet_mask;
+        } fet_mask;
     } u;
 };
 
