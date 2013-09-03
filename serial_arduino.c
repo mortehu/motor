@@ -53,31 +53,46 @@ static rx_callback rx;
 static tx_callback tx;
 
 void
-serial_open(uint32_t baud_rate, rx_callback rx_, tx_callback tx_)
+serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 {
-  uint16_t baud_setting;
+  /* Allow missing the requested baud rate by 5%.  */
+#define BAUD_TOL 5
 
-  /* Compatibility exception for:
-   *  - bootloader on Arduino Duemilanove and older
-   *  - firmware on 8U2 on Arduino Uno and Mega 2560
-   */
-  if (F_CPU == 16000000UL && baud_rate == 57600)
-    goto no_u2x;
-
-  baud_setting = (F_CPU / 4 / baud_rate - 1) / 2;
-
-  if (baud_setting >= 0x1000)
+  switch (baud_rate)
     {
-no_u2x:
-      UCSRA = 0;
-      baud_setting = (F_CPU / 8 / baud_rate - 1) / 2;
-    }
-  else
-    UCSRA = 1 << U2X;
+    case SERIAL_57600:
 
-  /* Assign the baud_setting, a.k.a. ubbr (USART Baud Rate Register) */
-  UBRRH = baud_setting >> 8;
-  UBRRL = baud_setting;
+#define BAUD 57600
+#include <util/setbaud.h>
+      UBRRH = UBRRH_VALUE;
+      UBRRL = UBRRL_VALUE;
+#if USE_2X
+      UCSRA |= (1 << U2X);
+#else
+      UCSRA &= ~(1 << U2X);
+#endif
+#undef BAUD
+
+      break;
+
+    default:
+    case SERIAL_115200:
+
+#define BAUD 115200
+#include <util/setbaud.h>
+      UBRRH = UBRRH_VALUE;
+      UBRRL = UBRRL_VALUE;
+#if USE_2X
+      UCSRA |= (1 << U2X);
+#else
+      UCSRA &= ~(1 << U2X);
+#endif
+#undef BAUD
+
+      break;
+    }
+
+#undef BAUD_TOL
 
   rx = rx_;
   tx = tx_;

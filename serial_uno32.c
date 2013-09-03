@@ -29,10 +29,10 @@ static rx_callback rx;
 static tx_callback tx;
 
 void
-serial_open(uint32_t baud_rate, rx_callback rx_, tx_callback tx_)
+serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 {
   p32_regset *interrupt_priority_control;
-  unsigned int irq_shift;
+  unsigned int irq_shift, rate_num;
   unsigned int enable_flags = 0;
 
   rx = rx_;
@@ -48,8 +48,15 @@ serial_open(uint32_t baud_rate, rx_callback rx_, tx_callback tx_)
   interrupt_priority_control->set = ((_SER0_IPL << 2) + _SER0_SPL) << irq_shift;
   interrupt_enable_control->set = rx_bit | tx_bit | error_bit;
 
+  switch (baud_rate)
+    {
+    case SERIAL_57600: rate_num = 57600; break;
+    default:
+    case SERIAL_115200: rate_num = 115200;
+    }
+
   /* 8-bit data mode.  See Example 19-2.[1]  */
-  uart->uxBrg.reg  = __PIC32_pbClk / 16 / baud_rate - 1; /* Example 19-1.[1]  */
+  uart->uxBrg.reg  = __PIC32_pbClk / 16 / rate_num - 1; /* Example 19-1.[1]  */
   uart->uxMode.reg = (1 << _UARTMODE_ON);
 
   if (rx)

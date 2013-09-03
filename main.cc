@@ -21,7 +21,7 @@ main()
 {
   init();
 
-  serial_open(115200, process_request, generate_message);
+  serial_open(SERIAL_115200, process_request, generate_message);
 
 #if defined(SYSTEM_ARDUINO)
   /* Set PWM frequency to 31.25 kHz.  */
