@@ -25,7 +25,7 @@ main()
 
 #if defined(SYSTEM_ARDUINO)
   /* Set PWM frequency to 31.25 kHz.  */
-  TCCR1B &= 0xf8 | 0x01;
+  TCCR1B &= 0xf8 | 0x02;
 #endif
 
   motors[0].set_pwm_pin(9);
