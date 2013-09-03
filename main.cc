@@ -85,8 +85,8 @@ process_request(unsigned char ch)
           motor1_requested_speed = request->u.speed.motor1_speed;
 
           motor_halt_timeout = millis() + 500;
-          motors[0].set_power(request->u.speed.motor0_speed);
-          motors[1].set_power(-request->u.speed.motor1_speed);
+          motors[0].set_power(-request->u.speed.motor0_speed);
+          motors[1].set_power(request->u.speed.motor1_speed);
 
           break;
 

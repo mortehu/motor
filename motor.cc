@@ -131,12 +131,12 @@ motor::commutate(int orientation)
     {
       static const signed char force[6][3] =
         {
-            {  1, -1,  0 },
             {  1,  0, -1 },
             {  0,  1, -1 },
             { -1,  1,  0 },
             { -1,  0,  1 },
             {  0, -1,  1 },
+            {  1, -1,  0 },
         };
       signed char force_a, force_b, force_c;
       unsigned char effective_power;

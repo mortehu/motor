@@ -76,7 +76,6 @@ reader_thread (void *arg)
           motor1_odometer = message.u.odometer.motor1_odometer;
           has_odometer = 1;
 
-
           break;
         }
 
