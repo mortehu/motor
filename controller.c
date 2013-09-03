@@ -183,7 +183,6 @@ main (int argc, char **argv)
   cfsetispeed (&tty, 115200);
   cfmakeraw (&tty);
   tty.c_cflag |= CLOCAL | CREAD | CS8;
-  tty.c_iflag |= ICRNL;
 
   if (tcsetattr (fd, TCSANOW, &tty) != 0)
     err(EXIT_FAILURE, "tcsetattr failed");
