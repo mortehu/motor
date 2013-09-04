@@ -41,8 +41,8 @@ main()
     {
       if (millis() > motor_halt_timeout)
         {
-          motors[0].reset();
-          motors[1].reset();
+          motors[0].set_power(0);
+          motors[1].set_power(0);
         }
 
       motors[0].update();
