@@ -10,14 +10,14 @@ motor::motor()
 }
 
 void
-motor::set_pwm_pin(int pin)
+motor::set_pwm_pin(uint8_t pin)
 {
   analogWrite(pwm_ = pin, 0);
   pinMode(pwm_, OUTPUT);
 }
 
 void
-motor::set_output_pins(int a, int b, int c)
+motor::set_output_pins(uint8_t a, uint8_t b, uint8_t c)
 {
   digitalWrite(output_a_ = a, 0);
   digitalWrite(output_b_ = b, 0);
@@ -28,7 +28,7 @@ motor::set_output_pins(int a, int b, int c)
 }
 
 void
-motor::set_sensor_pins(int a, int b, int c)
+motor::set_sensor_pins(uint8_t a, uint8_t b, uint8_t c)
 {
   pinMode(sensor_a_ = a, INPUT);
   pinMode(sensor_b_ = b, INPUT);
@@ -38,7 +38,7 @@ motor::set_sensor_pins(int a, int b, int c)
 void
 motor::update()
 {
-  int new_orientation;
+  int8_t new_orientation;
 
   new_orientation = read_orientation();
 
@@ -51,19 +51,20 @@ motor::update()
         {
           if (orientation_ + 1 == new_orientation ||
               orientation_ == new_orientation - 1)
-            ++odometer_;
+            {
+              ++odometer_;
+            }
           else if (new_orientation + 1 == orientation_ ||
                    new_orientation == orientation_ - 1)
-            --odometer_;
+            {
+              --odometer_;
+            }
         }
 
       orientation_ = new_orientation;
-      orientation_valid_ = 1;
     }
-  else
-    orientation_valid_ = 0;
 
-  commutate(new_orientation);
+  commutate();
 }
 
 void
@@ -74,7 +75,7 @@ motor::reset()
   power_ = 0;
 }
 
-int
+int8_t
 motor::read_orientation()
 {
   /* Hall sensors:  AA   A
@@ -89,7 +90,7 @@ motor::read_orientation()
     * 4                  *
     * 5                   *
     */
-  static const int orientation_map[8] =
+  static const int8_t orientation_map[8] =
     {
       -1, /*     */
        0, /*   A */
@@ -101,7 +102,7 @@ motor::read_orientation()
       -1, /* CBA */
     };
 
-  unsigned int sensor_a_state, sensor_b_state, sensor_c_state;
+  uint8_t sensor_a_state, sensor_b_state, sensor_c_state;
 
   sensor_a_state = analogRead(sensor_a_) > HALL_SENSOR_THRESHOLD;
   sensor_b_state = analogRead(sensor_b_) > HALL_SENSOR_THRESHOLD;
@@ -111,7 +112,7 @@ motor::read_orientation()
 }
 
 void
-motor::commutate(int orientation)
+motor::commutate()
 {
   if (power_ == 0)
     {
@@ -120,7 +121,7 @@ motor::commutate(int orientation)
       digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT);
       digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT);
     }
-  else if (orientation == -1)
+  else if (orientation_ == -1)
     {
       analogWrite(pwm_, 0);
       pinMode(output_a_, INPUT);
@@ -129,7 +130,7 @@ motor::commutate(int orientation)
     }
   else
     {
-      static const signed char force[6][3] =
+      static const int8_t force[6][3] =
         {
             {  1,  0, -1 },
             {  0,  1, -1 },
@@ -138,12 +139,12 @@ motor::commutate(int orientation)
             {  0, -1,  1 },
             {  1, -1,  0 },
         };
-      signed char force_a, force_b, force_c;
-      unsigned char effective_power;
+      int8_t force_a, force_b, force_c;
+      uint8_t effective_power;
 
-      force_a = force[orientation][0];
-      force_b = force[orientation][1];
-      force_c = force[orientation][2];
+      force_a = force[orientation_][0];
+      force_b = force[orientation_][1];
+      force_c = force[orientation_][2];
 
       if (power_ > 0)
         effective_power = power_;

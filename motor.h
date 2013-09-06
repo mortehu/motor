@@ -1,6 +1,8 @@
 #ifndef MOTOR_H_
 #define MOTOR_H_ 1
 
+#include <stdint.h>
+
 #include "protocol.h"
 
 class motor
@@ -8,35 +10,32 @@ class motor
 public:
   motor();
 
-  void set_pwm_pin(int pin);
-  void set_sensor_pins(int a, int b, int c);
-  void set_output_pins(int a, int b, int c);
+  void set_pwm_pin(uint8_t pin);
+  void set_sensor_pins(uint8_t a, uint8_t b, uint8_t c);
+  void set_output_pins(uint8_t a, uint8_t b, uint8_t c);
 
   void update();
 
   void reset();
 
   unsigned int odometer() const { return odometer_; }
-  int orientation() const { return orientation_; }
-  int orientation_valid() const { return orientation_valid_; }
+  int8_t orientation() const { return orientation_; }
   signed short power() const { return power_; }
 
-  void set_power(signed short power) { power_ = power; commutate(orientation_); }
+  void set_power(signed short power) { power_ = power; commutate(); }
 
 private:
-  int read_orientation();
+  int8_t read_orientation();
 
-  void commutate(int orientation);
+  void commutate();
 
-  unsigned int odometer_;
-  int orientation_;
-  int orientation_valid_;
+  uint16_t odometer_;
+  int8_t orientation_;
 
-
-  int pwm_;
-  int sensor_a_, sensor_b_, sensor_c_;
-  int output_a_, output_b_, output_c_;
-  signed short power_;
+  uint8_t pwm_;
+  uint8_t sensor_a_, sensor_b_, sensor_c_;
+  uint8_t output_a_, output_b_, output_c_;
+  int16_t power_;
 };
 
 #endif /* !MOTOR_H_ */
