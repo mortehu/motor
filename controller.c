@@ -25,8 +25,6 @@ static pthread_mutex_t display_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int display_dirty = 1;
 static pthread_cond_t display_dirty_cond = PTHREAD_COND_INITIALIZER;
 
-unsigned char fet_mask = 0;
-
 static void
 write_all (int fd, const void *buffer, size_t size)
 {
@@ -101,12 +99,10 @@ user_input_thread (void *arg)
   while (EOF != (ch = getchar ()))
     {
       struct motor_message msg;
-      unsigned char prev_fet_mask;
 
       msg.sync[0] = MOTOR_SYNC_BYTE0;
       msg.sync[1] = MOTOR_SYNC_BYTE1;
-
-      prev_fet_mask = fet_mask;
+      msg.type = MOTOR_MSG_REQUEST_SPEED;
 
       switch (ch)
         {
@@ -120,18 +116,10 @@ user_input_thread (void *arg)
         case '8':
         case '9':
 
-          msg.type = MOTOR_MSG_REQUEST_SPEED;
           msg.u.speed.motor0_speed = (ch - '0') * 127 / 9;
           msg.u.speed.motor1_speed = (ch - '0') * 127 / 9;
 
           break;
-
-        case 'q': fet_mask ^= 0x01; break;
-        case 'w': fet_mask ^= 0x02; break;
-        case 'e': fet_mask ^= 0x04; break;
-        case 'r': fet_mask ^= 0x08; break;
-        case 't': fet_mask ^= 0x10; break;
-        case 'y': fet_mask ^= 0x20; break;
 
         default:
         case ' ':
@@ -140,13 +128,6 @@ user_input_thread (void *arg)
           msg.u.speed.motor1_speed = 0;
 
           break;
-        }
-
-      if (prev_fet_mask != fet_mask)
-        {
-          msg.type = MOTOR_MSG_FET_MASK;
-          msg.u.fet_mask.motor0_fet_mask = fet_mask;
-          msg.u.fet_mask.motor1_fet_mask = fet_mask;
         }
 
       msg.crc8 = crc8(&msg.type, sizeof(msg) - offsetof(struct motor_message, type));
@@ -222,24 +203,6 @@ main (int argc, char **argv)
 
       printf ("Motor A requested speed: %u\n", motor0_requested_speed);
       printf ("Motor B requested speed: %u\n", motor1_requested_speed);
-
-      printf ("Enabled FETs:");
-
-      static const char *fet_names[] =
-        {
-          "A+", "B+", "C+", "A-", "B-", "C-",
-        };
-      int i;
-
-      for (i = 0; i < 6; ++i)
-        {
-          if (fet_mask & (1 << i))
-            printf ("   ");
-          else
-            printf (" %s", fet_names[i]);
-        }
-
-      printf ("\n");
 
       usleep (20000);
     }

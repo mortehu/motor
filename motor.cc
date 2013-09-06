@@ -173,15 +173,6 @@ motor::commutate(int orientation)
           break; \
         }
 
-#ifndef NDEBUG
-      if ((fet_mask_ & 0x01) && force_a ==  1) force_a = 0;
-      if ((fet_mask_ & 0x02) && force_b ==  1) force_b = 0;
-      if ((fet_mask_ & 0x04) && force_c ==  1) force_c = 0;
-      if ((fet_mask_ & 0x08) && force_a == -1) force_a = 0;
-      if ((fet_mask_ & 0x10) && force_b == -1) force_b = 0;
-      if ((fet_mask_ & 0x20) && force_c == -1) force_c = 0;
-#endif
-
       HANDLE_PIN(output_a_, force_a)
       HANDLE_PIN(output_b_, force_b)
       HANDLE_PIN(output_c_, force_c)

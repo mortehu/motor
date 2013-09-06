@@ -96,15 +96,6 @@ process_request(unsigned char ch)
           motor1_max_acceleration = request->u.acceleration.motor1_max_acceleration;
 
           break;
-
-#ifndef NDEBUG
-        case MOTOR_MSG_FET_MASK:
-
-          motors[0].set_fet_mask(request->u.fet_mask.motor0_fet_mask);
-          motors[1].set_fet_mask(request->u.fet_mask.motor1_fet_mask);
-
-          break;
-#endif
         }
 
       rx_fill = 0;

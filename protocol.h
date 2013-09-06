@@ -43,12 +43,6 @@ struct motor_message
           unsigned short motor0_odometer;
           unsigned short motor1_odometer;
         } odometer;
-
-      struct
-        {
-          unsigned char motor0_fet_mask;
-          unsigned char motor1_fet_mask;
-        } fet_mask;
     } u;
 };
 
