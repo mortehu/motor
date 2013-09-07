@@ -116,8 +116,8 @@ user_input_thread (void *arg)
         case '8':
         case '9':
 
-          msg.u.speed.motor0_speed = (ch - '0') * 127 / 9;
-          msg.u.speed.motor1_speed = (ch - '0') * 127 / 9;
+          msg.u.speed.motor0_speed = (ch - '0') * 20000 / 9;
+          msg.u.speed.motor1_speed = (ch - '0') * 20000 / 9;
 
           break;
 

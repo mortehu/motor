@@ -17,6 +17,8 @@ generate_message(void *buffer, uint16_t *size);
 static unsigned char rx_buffer[sizeof(struct motor_message)];
 static unsigned int rx_fill;
 
+static uint32_t next_pid_update;
+
 int
 main()
 {
@@ -39,14 +41,24 @@ main()
 
   for (;;)
     {
-      if (millis() > motor_halt_timeout)
+      uint32_t now = micros ();
+
+      if (now > motor_halt_timeout)
         {
-          motors[0].set_power(0);
-          motors[1].set_power(0);
+          motors[0].quick_stop();
+          motors[1].quick_stop();
         }
 
-      motors[0].update();
-      motors[1].update();
+      if (now >= next_pid_update)
+        {
+          motors[0].pid_update();
+          motors[1].pid_update();
+
+          next_pid_update = now + 10000;
+        }
+
+      motors[0].update(now);
+      motors[1].update(now);
     }
 }
 
@@ -84,9 +96,9 @@ process_request(unsigned char ch)
           motor0_requested_speed = request->u.speed.motor0_speed;
           motor1_requested_speed = request->u.speed.motor1_speed;
 
-          motor_halt_timeout = millis() + 500;
-          motors[0].set_power(-request->u.speed.motor0_speed);
-          motors[1].set_power(request->u.speed.motor1_speed);
+          motor_halt_timeout = micros () + 500000;
+          motors[0].set_speed(-request->u.speed.motor0_speed);
+          motors[1].set_speed(request->u.speed.motor1_speed);
 
           break;
 

@@ -36,14 +36,22 @@ motor::set_sensor_pins(uint8_t a, uint8_t b, uint8_t c)
 }
 
 void
-motor::update()
+motor::update(uint32_t time)
 {
   int8_t new_orientation;
 
   new_orientation = read_orientation();
 
   if (new_orientation == orientation_)
-    return;
+    {
+      if (time > last_time_ + 100000)
+        {
+          speed_ = 0;
+          last_time_ = time;
+        }
+
+      return;
+    }
 
   if (new_orientation != -1)
     {
@@ -53,11 +61,16 @@ motor::update()
               orientation_ == new_orientation - 1)
             {
               ++odometer_;
+              speed_ = 0xffffff / ((int32_t) time - last_time_);
+              last_time_ = time;
             }
           else if (new_orientation + 1 == orientation_ ||
                    new_orientation == orientation_ - 1)
             {
               --odometer_;
+              speed_ = 0xffffff / ((int32_t) time - last_time_);
+              speed_ = -speed_;
+              last_time_ = time;
             }
         }
 
@@ -73,6 +86,35 @@ motor::reset()
   orientation_ = -1;
   odometer_ = 0;
   power_ = 0;
+  target_speed_ = 0;
+  speed_ = 0;
+  previous_error_ = 0;
+  integral_ = 0;
+  commutate();
+}
+
+void
+motor::pid_update()
+{
+  static const int32_t Kp = 12;
+  static const int32_t Ki = 12;
+  static const int32_t Kd = 8;
+
+  int32_t error = target_speed_ - speed_;
+
+  integral_ += error;
+
+  int32_t derivative = error - previous_error_;
+  int32_t output = (Kp * error + Ki * integral_ + Kd * derivative) >> 14;
+
+  if (output > 200)
+    set_power (-200);
+  else if (output < -200)
+    set_power (200);
+  else
+    set_power (-output);
+
+  previous_error_ = error;
 }
 
 int8_t
