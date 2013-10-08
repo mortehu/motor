@@ -157,21 +157,20 @@ main (int argc, char **argv)
 
   memset (&tty, 0, sizeof tty);
 
-  if (-1 == tcgetattr (fd, &tty))
-    err(EXIT_FAILURE, "tcgetattr failed");
-
-  cfsetospeed (&tty, 115200);
-  cfsetispeed (&tty, 115200);
+  cfsetospeed (&tty, B115200);
+  cfsetispeed (&tty, B115200);
   cfmakeraw (&tty);
   tty.c_cflag |= CLOCAL | CREAD | CS8;
 
-  if (tcsetattr (fd, TCSANOW, &tty) != 0)
-    err(EXIT_FAILURE, "tcsetattr failed");
+  if (-1 == tcsetattr (fd, TCSANOW, &tty))
+    err(EXIT_FAILURE, "tcsetattr failed on '%s'", argv[1]);
 
   /* Disable input buffering on standard input.  */
-  tcgetattr(STDIN_FILENO, &tty);
+  if (-1 == tcgetattr(STDIN_FILENO, &tty))
+    err(EXIT_FAILURE, "tcgetattr failed on stdin");
   tty.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW,&tty);
+  if (-1 == tcsetattr(STDIN_FILENO, TCSANOW, &tty))
+    err(EXIT_FAILURE, "tcsetattr failed on stdin");
 
   pthread_t reader_thread_handle;
   pthread_create (&reader_thread_handle, NULL, reader_thread, NULL);
