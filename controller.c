@@ -193,7 +193,7 @@ main (int argc, char **argv)
 
       if (has_odometer)
         {
-          printf ("Odomoter A: %04x\n", motor0_odometer);
+          printf ("Odometer A: %04x\n", motor0_odometer);
           printf ("Odometer B: %04x\n", motor1_odometer);
         }
       else
