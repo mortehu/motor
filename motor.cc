@@ -57,15 +57,13 @@ motor::update(uint32_t time)
     {
       if (orientation_ != -1)
         {
-          if (orientation_ + 1 == new_orientation ||
-              orientation_ == new_orientation - 1)
+          if ((orientation_ + 1) % 6 == new_orientation)
             {
               ++odometer_;
               speed_ = 0xffffff / ((int32_t) time - last_time_);
               last_time_ = time;
             }
-          else if (new_orientation + 1 == orientation_ ||
-                   new_orientation == orientation_ - 1)
+          else if ((new_orientation + 1) % 6 == orientation_)
             {
               --odometer_;
               speed_ = 0xffffff / ((int32_t) time - last_time_);
