@@ -160,7 +160,6 @@ main (int argc, char **argv)
   cfsetospeed (&tty, B115200);
   cfsetispeed (&tty, B115200);
   cfmakeraw (&tty);
-  tty.c_cflag |= CLOCAL | CREAD | CS8;
 
   if (-1 == tcsetattr (fd, TCSANOW, &tty))
     err(EXIT_FAILURE, "tcsetattr failed on '%s'", argv[1]);
