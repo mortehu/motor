@@ -24,6 +24,8 @@ public:
 
   void set_speed(int16_t speed) { target_speed_ = speed; }
 
+  /* Emergency shutdown of the motors.  This code should be very simple, so
+   * that we can be absolutely sure the motors won't keep spinning.  */
   void quick_stop(void)
   {
     target_speed_ = 0;
@@ -39,6 +41,9 @@ public:
 
 private:
   static const int8_t invalid_orientation;
+
+  /* Maximum value of the integral PID control term.  */
+  static const int32_t max_integral;
 
   void set_power(signed short power) { power_ = power; commutate(); }
 

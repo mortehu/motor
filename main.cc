@@ -4,10 +4,16 @@
 #include "serial.h"
 
 static struct motor motors[2];
-static signed short motor0_requested_speed, motor1_requested_speed;
 static signed short motor0_max_acceleration, motor1_max_acceleration;
-static unsigned long motor_halt_timeout;
 
+/* The time at which we will stop the motors, by setting the target speed for
+ * the PID controller to zero.  */
+static unsigned long motor_brake_timeout;
+
+/* The time at which we will freeze the motors, by grounding the wires.  */
+static unsigned long motor_freeze_timeout;
+
+/* Process one byte of data from the serial bus.  */
 static void
 process_request(unsigned char ch);
 
@@ -43,10 +49,18 @@ main()
     {
       uint32_t now = micros ();
 
-      if (now > motor_halt_timeout)
+      if (now > motor_freeze_timeout)
         {
+          /* Instantly grounds the power wires.  This is a safeguard against
+           * bugs in the PID controller.  */
           motors[0].quick_stop();
           motors[1].quick_stop();
+        }
+      else if (now > motor_brake_timeout)
+        {
+          /* Smoothly stops the motors.  */
+          motors[0].set_speed(0);
+          motors[1].set_speed(9);
         }
 
       if (now >= next_pid_update)
@@ -93,10 +107,8 @@ process_request(unsigned char ch)
         {
         case MOTOR_MSG_REQUEST_SPEED:
 
-          motor0_requested_speed = request->u.speed.motor0_speed;
-          motor1_requested_speed = request->u.speed.motor1_speed;
-
-          motor_halt_timeout = micros () + 500000;
+          motor_brake_timeout = micros () + 500000;
+          motor_freeze_timeout = micros () + 1000000;
           motors[0].set_speed(-request->u.speed.motor0_speed);
           motors[1].set_speed(request->u.speed.motor1_speed);
 
