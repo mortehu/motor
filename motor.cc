@@ -122,13 +122,13 @@ motor::read_orientation()
     *                BBB
     *                  CCC
     *
-    * Orientation:   Magnet:
-    * 0              *
-    * 1               *
-    * 2                *
-    * 3                 *
-    * 4                  *
-    * 5                   *
+    * Orientation:  Magnet:
+    * 0             *
+    * 1              *
+    * 2               *
+    * 3                *
+    * 4                 *
+    * 5                  *
     */
   static const int8_t orientation_map[8] =
     {
