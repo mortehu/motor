@@ -4,6 +4,8 @@
 /* HALL_SENSOR_THRESHOLD is specified in multiples of of 4.9 mV. */
 #define HALL_SENSOR_THRESHOLD 510  /* 2.5 V */
 
+const int8_t motor::invalid_orientation = -1;
+
 motor::motor()
 {
   reset();
@@ -53,9 +55,9 @@ motor::update(uint32_t time)
       return;
     }
 
-  if (new_orientation != -1)
+  if (new_orientation != invalid_orientation)
     {
-      if (orientation_ != -1)
+      if (orientation_ != invalid_orientation)
         {
           if ((orientation_ + 1) % 6 == new_orientation)
             {
@@ -81,7 +83,7 @@ motor::update(uint32_t time)
 void
 motor::reset()
 {
-  orientation_ = -1;
+  orientation_ = invalid_orientation;
   odometer_ = 0;
   power_ = 0;
   target_speed_ = 0;
@@ -132,14 +134,14 @@ motor::read_orientation()
     */
   static const int8_t orientation_map[8] =
     {
-      -1, /*     */
-       0, /*   A */
-       2, /*  B  */
-       1, /*  BA */
-       4, /* C   */
-       5, /* C A */
-       3, /* CB  */
-      -1, /* CBA */
+      invalid_orientation, /*     */
+                        0, /*   A */
+                        2, /*  B  */
+                        1, /*  BA */
+                        4, /* C   */
+                        5, /* C A */
+                        3, /* CB  */
+      invalid_orientation, /* CBA */
     };
 
   uint8_t sensor_a_state, sensor_b_state, sensor_c_state;
@@ -161,7 +163,7 @@ motor::commutate()
       digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT);
       digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT);
     }
-  else if (orientation_ == -1)
+  else if (orientation_ == invalid_orientation)
     {
       analogWrite(pwm_, 0);
       pinMode(output_a_, INPUT);

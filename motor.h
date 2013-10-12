@@ -38,6 +38,8 @@ public:
   void pid_update();
 
 private:
+  static const int8_t invalid_orientation;
+
   void set_power(signed short power) { power_ = power; commutate(); }
 
   int8_t read_orientation();
