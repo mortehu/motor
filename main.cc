@@ -60,7 +60,7 @@ main()
         {
           /* Smoothly stops the motors.  */
           motors[0].set_speed(0);
-          motors[1].set_speed(9);
+          motors[1].set_speed(0);
         }
 
       if (now >= next_pid_update)
