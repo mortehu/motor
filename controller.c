@@ -20,6 +20,7 @@ static uint32_t motor0_odometer, motor1_odometer;
 static uint32_t messages_received;
 
 static uint32_t motor0_requested_speed, motor1_requested_speed;
+static int reverse;
 
 static pthread_mutex_t display_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int display_dirty = 1;
@@ -106,6 +107,12 @@ user_input_thread (void *arg)
 
       switch (ch)
         {
+        case '-':
+
+          reverse = !reverse;
+
+          break;
+
         case '1':
         case '2':
         case '3':
@@ -118,6 +125,12 @@ user_input_thread (void *arg)
 
           msg.u.speed.motor0_speed = (ch - '0') * 20000 / 9;
           msg.u.speed.motor1_speed = (ch - '0') * 20000 / 9;
+
+          if (reverse)
+            {
+              msg.u.speed.motor0_speed = -msg.u.speed.motor0_speed;
+              msg.u.speed.motor1_speed = -msg.u.speed.motor1_speed;
+            }
 
           break;
 
