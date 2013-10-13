@@ -67,15 +67,26 @@ reader_thread (void *arg)
             fill = 0;
         }
 
+      if (message.crc8 != crc8(&message.type, sizeof(message) - offsetof(struct motor_message, type)))
+        {
+          fill = 0;
+
+          continue;
+        }
+
       pthread_mutex_lock (&display_mutex);
 
       switch (message.type)
         {
         case MOTOR_MSG_ODOMETER:
 
+          if (!has_odometer
+              && message.u.odometer.motor0_odometer == motor0_odometer
+              && message.u.odometer.motor0_odometer == motor1_odometer)
+            has_odometer = 1;
+
           motor0_odometer = message.u.odometer.motor0_odometer;
           motor1_odometer = message.u.odometer.motor1_odometer;
-          has_odometer = 1;
 
           break;
         }
