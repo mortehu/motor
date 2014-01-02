@@ -22,8 +22,6 @@
 
 #if defined(USART_RX_vect)
 #  define RX_SIGNAL USART_RX_vect
-#elif defined(SIG_USART0_RECV)
-#  define RX_SIGNAL SIG_USART0_RECV
 #elif defined(SIG_UART0_RECV)
 #  define RX_SIGNAL SIG_UART0_RECV
 #elif defined(USART0_RX_vect)
