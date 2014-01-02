@@ -15,10 +15,9 @@ if SYSTEM_ARDUINO
 noinst_DATA = motor.hex
 AM_CPPFLAGS = -DSYSTEM_ARDUINO=1
 libplatform_a_SOURCES = \
-  $(WIRING_PATH)/wiring.c \
-  $(WIRING_PATH)/wiring_analog.c \
-  $(WIRING_PATH)/wiring_digital.c \
+  hardware.cc \
   serial_arduino.c
+libplatform_a_CPPFLAGS = -I$(WIRING_PATH) $(AM_CPPFLAGS)
 
 SERIAL_PORT=/dev/serial/by-id/usb-Arduino_*-if00
 AVRDUDEFLAGS=$(AVRDUDE_ARGS) -P $(SERIAL_PORT) -b 115200 -v -U
@@ -34,12 +33,9 @@ if SYSTEM_UNO32
 noinst_DATA = motor.hex
 AM_CPPFLAGS = -DSYSTEM_UNO32=1
 libplatform_a_SOURCES = \
-  $(WIRING_PATH)/pins_arduino.c \
-  $(WIRING_PATH)/task_manager.c \
-  $(WIRING_PATH)/wiring.c \
-  $(WIRING_PATH)/wiring_analog.c \
-  $(WIRING_PATH)/wiring_digital.c \
+  hardware.cc \
   serial_uno32.c
+libplatform_a_CPPFLAGS = -I$(WIRING_PATH) $(AM_CPPFLAGS)
 
 SERIAL_PORT=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AE00DE7L-if00-port0
 AVRDUDEFLAGS=-C$(MPIDE_PATH)/hardware/tools/avrdude.conf $(AVRDUDE_ARGS) -P $(SERIAL_PORT) -b 115200 -v -U
