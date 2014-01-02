@@ -1,5 +1,5 @@
 AC_INIT(motor,1)
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -110,6 +110,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 AM_PROG_AS
+AM_PROG_AR
 
 AC_C_BIGENDIAN
 

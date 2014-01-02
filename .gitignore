@@ -7,6 +7,8 @@
 .*.sw?
 /.deps
 /aclocal.m4
+/ar-lib
+/compile
 /config.guess
 /config.sub
 /configure
