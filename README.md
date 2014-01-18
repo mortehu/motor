@@ -3,6 +3,13 @@ Brushless DC electric motor controller
 
 Implements a controller for three phase BLDC motors.
 
+If you're building this package from a Git working copy rather than a
+distribution, you must run
+
+    autoreconf -f -i
+
+to generate configure, Makefile.in and other files needed to build.
+
 To build this package for chipKIT Uno32, run:
 
     wget https://github.com/downloads/chipKIT32/chipKIT32-MAX/mpide-0023-linux-20120903.tgz
