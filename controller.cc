@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <deque>
 #include <map>
 
 #include <arpa/inet.h>
@@ -45,6 +46,20 @@ static const struct {
 };
 
 static std::map<uint8_t, var> vars;
+
+struct OdometrySample {
+  double when;
+  int32_t motor0, motor1;
+};
+
+static pthread_mutex_t odometry_mutex = PTHREAD_MUTEX_INITIALIZER;
+static std::deque<OdometrySample> odometry_samples;
+
+double GetTime() {
+  struct timeval tv;
+  gettimeofday(&tv, nullptr);
+  return tv.tv_sec + 1.0e-6 * tv.tv_usec;
+}
 
 static void write_all(int fd, const void *buffer, size_t size) {
   size_t offset = 0;
@@ -93,6 +108,7 @@ static void *reader_thread(void *arg) {
 
     switch (message.type) {
       case MOTOR_MSG_ODOMETER: {
+        double now = GetTime();
 
         if (!has_odometer &&
             message.u.odometer.motor0_odometer == motor0_odometer &&
@@ -100,9 +116,9 @@ static void *reader_thread(void *arg) {
           has_odometer = 1;
 
         int32_t left_delta =
-          (int32_t) message.u.odometer.motor0_odometer - motor0_odometer;
+            (int32_t) message.u.odometer.motor0_odometer - motor0_odometer;
         int32_t right_delta =
-          (int32_t) message.u.odometer.motor1_odometer - motor1_odometer;
+            (int32_t) message.u.odometer.motor1_odometer - motor1_odometer;
         motor0_odometer = message.u.odometer.motor0_odometer;
         motor1_odometer = message.u.odometer.motor1_odometer;
 
@@ -118,6 +134,13 @@ static void *reader_thread(void *arg) {
 
         motor0_distance += left_delta;
         motor1_distance += right_delta;
+
+        pthread_mutex_lock(&odometry_mutex);
+        odometry_samples.emplace_back();
+        odometry_samples.back().when = now;
+        odometry_samples.back().motor0 = motor0_distance;
+        odometry_samples.back().motor1 = motor1_distance;
+        pthread_mutex_unlock(&odometry_mutex);
 
       } break;
 
@@ -174,8 +197,8 @@ static void *user_input_thread(void *arg) {
       case '9':
 
         msg.type = MOTOR_MSG_REQUEST_SPEED;
-        motor0_requested_speed = (ch - '0') * 10000 / 10;
-        motor1_requested_speed = (ch - '0') * 10000 / 10;
+        motor0_requested_speed = (ch - '0') * 4322;
+        motor1_requested_speed = (ch - '0') * 4322;
 
         break;
 
@@ -264,6 +287,23 @@ int main(int argc, char **argv) {
     if (has_odometer) {
       printf("Odometer A: %d (%04x)\n", motor0_distance, motor0_odometer);
       printf("Odometer B: %d (%04x)\n", motor1_distance, motor1_odometer);
+
+      double now = GetTime();
+
+      pthread_mutex_lock(&odometry_mutex);
+      while (odometry_samples.size() >= 10 &&
+             odometry_samples.front().when < now - 0.5)
+        odometry_samples.pop_front();
+      pthread_mutex_unlock(&odometry_mutex);
+
+      printf(
+          "Speed A: %.3f\n",
+          (odometry_samples.back().motor0 - odometry_samples.front().motor0) /
+              (odometry_samples.back().when - odometry_samples.front().when));
+      printf(
+          "Speed B: %.3f\n",
+          (odometry_samples.back().motor1 - odometry_samples.front().motor1) /
+              (odometry_samples.back().when - odometry_samples.front().when));
     } else
       printf("Missing odometry\n\n");
 
