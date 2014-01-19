@@ -1,9 +1,9 @@
-CFLAGS=-Wall -g -pthread
+CXXFLAGS=-Wall -g -pthread -std=c++0x
 
 all: controller
 
 clean:
 	rm -f controller
 
-controller: crc8.c crc8.h controller.c protocol.h
-	$(CC) crc8.c controller.c $(OUTPUT_OPTION) $(CFLAGS) $(LDFLAGS)
+controller: crc8.c crc8.h controller.cc protocol.h
+	$(CXX) crc8.c controller.cc $(OUTPUT_OPTION) $(CXXFLAGS) $(LDFLAGS)

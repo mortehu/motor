@@ -72,9 +72,32 @@ motor::update(uint32_t time)
               speed_ = -speed_;
               last_time_ = time;
             }
+          else if ((orientation_ + 2) % 6 == new_orientation)
+            {
+              odometer_ += 2;
+              speed_ = 0x1fffffe / ((int32_t) time - last_time_);
+              last_time_ = time;
+            }
+          else if ((new_orientation + 2) % 6 == orientation_)
+            {
+              odometer_ -= 2;
+              speed_ = 0x1fffffe / ((int32_t) time - last_time_);
+              speed_ = -speed_;
+              last_time_ = time;
+            }
+          else
+            {
+              ++invalid_transitions_;
+            }
         }
 
       orientation_ = new_orientation;
+      last_state_valid_ = true;
+    }
+  else if (!last_state_valid_)
+    {
+      ++invalid_states_;
+      last_state_valid_ = false;
     }
 
   commutate();
