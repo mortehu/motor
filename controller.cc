@@ -18,7 +18,8 @@
 
 static int fd;
 static int has_odometer;
-static uint32_t motor0_odometer, motor1_odometer;
+static uint16_t motor0_odometer, motor1_odometer;
+static int32_t motor0_distance, motor1_distance;
 static uint32_t messages_received;
 
 static uint32_t motor0_requested_speed, motor1_requested_speed;
@@ -91,17 +92,34 @@ static void *reader_thread(void *arg) {
     pthread_mutex_lock(&display_mutex);
 
     switch (message.type) {
-      case MOTOR_MSG_ODOMETER:
+      case MOTOR_MSG_ODOMETER: {
 
         if (!has_odometer &&
             message.u.odometer.motor0_odometer == motor0_odometer &&
             message.u.odometer.motor0_odometer == motor1_odometer)
           has_odometer = 1;
 
+        int32_t left_delta =
+          (int32_t) message.u.odometer.motor0_odometer - motor0_odometer;
+        int32_t right_delta =
+          (int32_t) message.u.odometer.motor1_odometer - motor1_odometer;
         motor0_odometer = message.u.odometer.motor0_odometer;
         motor1_odometer = message.u.odometer.motor1_odometer;
 
-        break;
+        /* Handle 16 bit arithmetic overflow.  */
+        if (left_delta <= -0x8000)
+          left_delta += 0x10000;
+        else if (left_delta >= 0x8000)
+          left_delta -= 0x10000;
+        if (right_delta <= -0x8000)
+          right_delta += 0x10000;
+        else if (right_delta >= 0x8000)
+          right_delta -= 0x10000;
+
+        motor0_distance += left_delta;
+        motor1_distance += right_delta;
+
+      } break;
 
       case MOTOR_MSG_VAR:
 
@@ -126,6 +144,12 @@ static void *user_input_thread(void *arg) {
   int ch;
 
   while (EOF != (ch = getchar())) {
+    if (ch == 'r') {
+      motor0_distance = 0;
+      motor1_distance = 0;
+      continue;
+    }
+
     struct motor_message msg;
 
     msg.sync[0] = MOTOR_SYNC_BYTE0;
@@ -150,8 +174,8 @@ static void *user_input_thread(void *arg) {
       case '9':
 
         msg.type = MOTOR_MSG_REQUEST_SPEED;
-        motor0_requested_speed = (ch - '0') * 20000 / 9;
-        motor1_requested_speed = (ch - '0') * 20000 / 9;
+        motor0_requested_speed = (ch - '0') * 10000 / 10;
+        motor1_requested_speed = (ch - '0') * 10000 / 10;
 
         break;
 
@@ -238,8 +262,8 @@ int main(int argc, char **argv) {
     printf("\033[H\033[2J");
 
     if (has_odometer) {
-      printf("Odometer A: %04x\n", motor0_odometer);
-      printf("Odometer B: %04x\n", motor1_odometer);
+      printf("Odometer A: %d (%04x)\n", motor0_distance, motor0_odometer);
+      printf("Odometer B: %d (%04x)\n", motor1_distance, motor1_odometer);
     } else
       printf("Missing odometry\n\n");
 
