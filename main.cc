@@ -90,8 +90,8 @@ static void process_request(unsigned char ch) {
     switch (request->type) {
       case MOTOR_MSG_REQUEST_SPEED:
 
-        motor_brake_timeout = micros() + 50000000;
-        motor_freeze_timeout = micros() + 100000000;
+        motor_brake_timeout = micros() + 500000;
+        motor_freeze_timeout = micros() + 1000000;
         motors[0].set_speed(-request->u.speed.motor0_speed);
         motors[1].set_speed(request->u.speed.motor1_speed);
 
