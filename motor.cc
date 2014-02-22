@@ -12,10 +12,14 @@ motor::motor()
 }
 
 void
-motor::set_pwm_pin(uint8_t pin)
+motor::set_pwm_pins(uint8_t a, uint8_t b, uint16_t c)
 {
-  analogWrite(pwm_ = pin, 0);
-  pinMode(pwm_, OUTPUT);
+  analogWrite(pwm_a_ = a, 0);
+  pinMode(pwm_a_, OUTPUT);
+  analogWrite(pwm_b_ = b, 0);
+  pinMode(pwm_b_, OUTPUT);
+  analogWrite(pwm_c_ = c, 0);
+  pinMode(pwm_c_, OUTPUT);
 }
 
 void
@@ -181,17 +185,23 @@ motor::commutate()
 {
   if (power_ == 0)
     {
-      analogWrite(pwm_, 0);
-      digitalWrite(output_a_, 0); pinMode(output_a_, OUTPUT);
-      digitalWrite(output_b_, 0); pinMode(output_b_, OUTPUT);
-      digitalWrite(output_c_, 0); pinMode(output_c_, OUTPUT);
+      // Ground all wires.
+      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_a_, 0);
+      digitalWrite(output_a_, 1);
+      digitalWrite(output_b_, 1);
+      digitalWrite(output_c_, 1);
     }
   else if (orientation_ == invalid_orientation)
     {
-      analogWrite(pwm_, 0);
-      pinMode(output_a_, INPUT);
-      pinMode(output_b_, INPUT);
-      pinMode(output_c_, INPUT);
+      // Float all wires.
+      digitalWrite(output_a_, 0);
+      digitalWrite(output_b_, 0);
+      digitalWrite(output_c_, 0);
+      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_a_, 0);
     }
   else
     {
@@ -221,27 +231,26 @@ motor::commutate()
           effective_power = -power_;
         }
 
-      analogWrite(pwm_, effective_power);
-
-#define HANDLE_PIN(OUTPUT_PIN, VALUE) \
-      switch (VALUE) \
-        { \
-        case -1: \
-          digitalWrite(OUTPUT_PIN, 0); \
-          pinMode(OUTPUT_PIN, OUTPUT); \
-          break; \
-        case 0: \
-          pinMode(OUTPUT_PIN, INPUT); \
-          break; \
-        case 1: \
-          digitalWrite(OUTPUT_PIN, 1); \
-          pinMode(OUTPUT_PIN, OUTPUT); \
-          break; \
+#define HANDLE_PIN(ENABLE_PIN, PWM_PIN, VALUE)    \
+      switch (VALUE)                              \
+        {                                         \
+        case -1:                                  \
+          analogWrite(PWM_PIN, 0);                \
+          digitalWrite(ENABLE_PIN, 1);            \
+          break;                                  \
+        case 0:                                   \
+          digitalWrite(ENABLE_PIN, 0);            \
+          analogWrite(PWM_PIN, 0);                \
+          break;                                  \
+        case 1:                                   \
+          analogWrite(PWM_PIN, effective_power);  \
+          digitalWrite(ENABLE_PIN, 1);            \
+          break;                                  \
         }
 
-      HANDLE_PIN(output_a_, force_a)
-      HANDLE_PIN(output_b_, force_b)
-      HANDLE_PIN(output_c_, force_c)
+      HANDLE_PIN(output_a_, pwm_a_, force_a)
+      HANDLE_PIN(output_b_, pwm_b_, force_b)
+      HANDLE_PIN(output_c_, pwm_c_, force_c)
 #undef HANDLE_PIN
     }
 }

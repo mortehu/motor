@@ -36,13 +36,13 @@ int main() {
   TCCR1B &= 0xf8 | 0x01;
 #endif
 
-  motors[0].set_pwm_pin(9);
+  motors[0].set_pwm_pins(5, 2, 3);
   motors[0].set_sensor_pins(A0, A1, A2);
-  motors[0].set_output_pins(2, 3, 4);
+  motors[0].set_output_pins(22, 23, 24);
 
-  motors[1].set_pwm_pin(10);
-  motors[1].set_sensor_pins(A3, A4, A5);
-  motors[1].set_output_pins(5, 6, 7);
+  motors[1].set_pwm_pins(6, 7, 8);
+  motors[1].set_sensor_pins(A3, A5, A6);
+  motors[1].set_output_pins(25, 26, 27);
 
   for (;;) {
     uint32_t now = micros();

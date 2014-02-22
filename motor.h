@@ -10,7 +10,7 @@ class motor
 public:
   motor();
 
-  void set_pwm_pin(uint8_t pin);
+  void set_pwm_pins(uint8_t a, uint8_t b, uint16_t c);
   void set_sensor_pins(uint8_t a, uint8_t b, uint8_t c);
   void set_output_pins(uint8_t a, uint8_t b, uint8_t c);
 
@@ -59,7 +59,7 @@ private:
   uint16_t invalid_transitions_;
   uint16_t invalid_states_;
 
-  uint8_t pwm_;
+  uint8_t pwm_a_, pwm_b_, pwm_c_;
   uint8_t sensor_a_, sensor_b_, sensor_c_;
   uint8_t output_a_, output_b_, output_c_;
   int16_t power_;
