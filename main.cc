@@ -41,7 +41,7 @@ int main() {
   motors[0].set_output_pins(22, 23, 24);
 
   motors[1].set_pwm_pins(6, 7, 8);
-  motors[1].set_sensor_pins(A3, A5, A6);
+  motors[1].set_sensor_pins(A3, A4, A5);
   motors[1].set_output_pins(25, 26, 27);
 
   for (;;) {
