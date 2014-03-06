@@ -37,7 +37,7 @@ int main() {
 #endif
 
   motors[0].set_pwm_pins(5, 2, 3);
-  motors[0].set_sensor_pins(A0, A1, A2);
+  motors[0].set_sensor_pins(A2, A1, A0);
   motors[0].set_output_pins(22, 23, 24);
 
   motors[1].set_pwm_pins(6, 7, 8);
