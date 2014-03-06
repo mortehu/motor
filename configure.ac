@@ -29,6 +29,7 @@ case "$host" in
       hercules_3_1_ls)
         CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
         CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
+        CPPFLAGS="$CPPFLAGS -DHERCULES3_1"
         CFLAGS="$CFLAGS -mmcu=atmega2560"
         CXXFLAGS="$CXXFLAGS -mmcu=atmega2560"
         WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino

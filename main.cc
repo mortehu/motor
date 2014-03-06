@@ -31,7 +31,11 @@ int main() {
 
   serial_open(SERIAL_115200, process_request, generate_message);
 
-#if defined(SYSTEM_ARDUINO)
+#if defined(HERCULES3_1)
+  /* Set PWM frequency to 16.125 kHz.  */
+  TCCR3B &= 0xf8 | 0x01;
+  TCCR4B &= 0xf8 | 0x01;
+#elif defined(SYSTEM_ARDUINO)
   /* Set PWM frequency to 31.25 kHz.  */
   TCCR1B &= 0xf8 | 0x01;
 #endif
