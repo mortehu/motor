@@ -26,6 +26,18 @@ case "$host" in
     RANLIB=avr-ranlib
 
     case "$host_vendor" in
+      hercules_3_1_ls)
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
+        CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
+        CFLAGS="$CFLAGS -mmcu=atmega2560"
+        CXXFLAGS="$CXXFLAGS -mmcu=atmega2560"
+        WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino
+        AVRDUDE_ARGS="-c stk500v2 -p m2560"
+
+        AC_DEFINE(F_CPU, 8000000UL)
+        SYSTEM_ARDUINO=1
+        ;;
+
       arduino_mega2560)
         CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/cores/arduino"
         CPPFLAGS="$CPPFLAGS -I/usr/share/arduino/hardware/arduino/variants/mega"
