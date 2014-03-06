@@ -134,10 +134,10 @@ motor::pid_update()
   int32_t derivative = error - previous_error_;
   int32_t output = -(Kp * error + Ki * integral_ + Kd * derivative) >> 14;
 
-  if (output > 200)
-    set_power (200);
-  else if (output < -200)
-    set_power (-200);
+  if (output > 128)
+    set_power (128);
+  else if (output < -128)
+    set_power (-128);
   else
     set_power (output);
 
