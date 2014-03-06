@@ -187,8 +187,8 @@ motor::commutate()
     {
       // Ground all wires.
       analogWrite(pwm_a_, 0);
-      analogWrite(pwm_a_, 0);
-      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_b_, 0);
+      analogWrite(pwm_c_, 0);
       digitalWrite(output_a_, 1);
       digitalWrite(output_b_, 1);
       digitalWrite(output_c_, 1);
@@ -200,8 +200,8 @@ motor::commutate()
       digitalWrite(output_b_, 0);
       digitalWrite(output_c_, 0);
       analogWrite(pwm_a_, 0);
-      analogWrite(pwm_a_, 0);
-      analogWrite(pwm_a_, 0);
+      analogWrite(pwm_b_, 0);
+      analogWrite(pwm_c_, 0);
     }
   else
     {
