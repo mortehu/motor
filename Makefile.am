@@ -53,3 +53,6 @@ libplatform_a_SOURCES = \
   hardware.cc \
   serial_linux.c
 endif
+
+all: all-am
+	@echo host=$(host_triplet)
