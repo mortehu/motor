@@ -43,6 +43,12 @@ static const struct {
   { VAR_MOTOR0_INVALID_STATES, "motor #0 invalid states" },
   { VAR_MOTOR1_INVALID_TRANSITIONS, "motor #1 invalid transitions" },
   { VAR_MOTOR1_INVALID_STATES, "motor #1 invalid states" },
+  { VAR_BYTES_RECEIVED, "bytes received" },
+  { VAR_WRONG_SYNC0_BYTES, "wrong sync0 bytes" },
+  { VAR_WRONG_SYNC1_BYTES, "wrong sync1 bytes" },
+  { VAR_UNKNOWN_MESSAGES, "unknown messages" },
+  { VAR_OK_MESSAGES, "ok messages" },
+  { VAR_CRC_ERRORS, "crc errors" },
 };
 
 static std::map<uint8_t, var> vars;

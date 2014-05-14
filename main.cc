@@ -19,8 +19,16 @@ static void process_request(unsigned char ch);
 static void generate_message(void *buffer, uint16_t *size);
 
 static unsigned char rx_buffer[sizeof(struct motor_message)];
-static unsigned int rx_fill;
+static uint16_t rx_fill;
 
+static uint16_t bytes_received;
+static uint16_t wrong_sync0_bytes;
+static uint16_t wrong_sync1_bytes;
+static uint16_t unknown_messages;
+static uint16_t ok_messages;
+static uint16_t crc_errors;
+
+static bool first_message_received;
 static bool vars_requested;
 static uint8_t var_progress;
 
@@ -75,21 +83,31 @@ int main() {
 }
 
 static void process_request(unsigned char ch) {
+  ++bytes_received;
   rx_buffer[rx_fill++] = ch;
 
   if (rx_fill == 1) {
-    if (rx_buffer[0] != MOTOR_SYNC_BYTE0) rx_fill = 0;
+    if (rx_buffer[0] != MOTOR_SYNC_BYTE0) {
+      ++wrong_sync0_bytes;
+      rx_fill = 0;
+    }
   } else if (rx_fill == 2) {
-    if (rx_buffer[1] != MOTOR_SYNC_BYTE1) rx_fill = 0;
+    if (rx_buffer[1] != MOTOR_SYNC_BYTE1) {
+      ++wrong_sync1_bytes;
+      rx_fill = 0;
+    }
   } else if (rx_fill == sizeof(rx_buffer)) {
     struct motor_message *request =
         reinterpret_cast<struct motor_message *>(rx_buffer);
 
     if (request->crc8 != crc8(&request->type, sizeof(*request) - 3)) {
+      ++crc_errors;
       rx_fill = 0;
 
       return;
     }
+
+    first_message_received = true;
 
     switch (request->type) {
       case MOTOR_MSG_REQUEST_SPEED:
@@ -98,6 +116,7 @@ static void process_request(unsigned char ch) {
         motor_freeze_timeout = micros() + 1000000;
         motors[0].set_speed(request->u.speed.motor0_speed);
         motors[1].set_speed(-request->u.speed.motor1_speed);
+        ++ok_messages;
 
         break;
 
@@ -107,6 +126,7 @@ static void process_request(unsigned char ch) {
             request->u.acceleration.motor0_max_acceleration;
         motor1_max_acceleration =
             request->u.acceleration.motor1_max_acceleration;
+        ++ok_messages;
 
         break;
 
@@ -114,8 +134,13 @@ static void process_request(unsigned char ch) {
 
         vars_requested = true;
         var_progress = 0;
+        ++ok_messages;
 
         break;
+
+      default:
+
+        ++unknown_messages;
     }
 
     rx_fill = 0;
@@ -130,10 +155,15 @@ static void generate_message(void *buffer, uint16_t *size) {
   message->sync[0] = MOTOR_SYNC_BYTE0;
   message->sync[1] = MOTOR_SYNC_BYTE1;
 
+  if (!first_message_received && !vars_requested) {
+    vars_requested = true;
+    var_progress = 0;
+  }
+
   if (vars_requested) {
     message->type = MOTOR_MSG_VAR;
     message->u.var.id = var_progress++;
-    if (message->u.var.id >= VAR_LAST) vars_requested = false;
+    if (var_progress >= VAR_LAST) vars_requested = false;
 
     switch (message->u.var.id) {
       case VAR_MOTOR0_INVALID_TRANSITIONS:
@@ -147,6 +177,24 @@ static void generate_message(void *buffer, uint16_t *size) {
         break;
       case VAR_MOTOR1_INVALID_STATES:
         message->u.var.value = motors[1].invalid_states();
+        break;
+      case VAR_BYTES_RECEIVED:
+        message->u.var.value = bytes_received;
+        break;
+      case VAR_WRONG_SYNC0_BYTES:
+        message->u.var.value = wrong_sync0_bytes;
+        break;
+      case VAR_WRONG_SYNC1_BYTES:
+        message->u.var.value = wrong_sync1_bytes;
+        break;
+      case VAR_UNKNOWN_MESSAGES:
+        message->u.var.value = unknown_messages;
+        break;
+      case VAR_OK_MESSAGES:
+        message->u.var.value = ok_messages;
+        break;
+      case VAR_CRC_ERRORS:
+        message->u.var.value = crc_errors;
         break;
       default:
         message->u.var.value = 0xdead;
