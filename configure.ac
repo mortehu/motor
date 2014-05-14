@@ -33,6 +33,8 @@ case "$host" in
         CFLAGS="$CFLAGS -mmcu=atmega2560"
         CXXFLAGS="$CXXFLAGS -mmcu=atmega2560"
         WIRING_DEFAULT_PATH=/usr/share/arduino/hardware/arduino/cores/arduino
+        # TODO(mortehu): Program using this command:
+        # avrdude -c avrispmkII -p m2560 -P usb -v -U flash:w:$(FILE):i
         AVRDUDE_ARGS="-c stk500v2 -p m2560"
 
         AC_DEFINE(F_CPU, 8000000UL)
