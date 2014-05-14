@@ -259,8 +259,8 @@ int main(int argc, char **argv) {
 
   memset(&tty, 0, sizeof tty);
 
-  cfsetospeed(&tty, B115200);
-  cfsetispeed(&tty, B115200);
+  cfsetospeed(&tty, B57600);
+  cfsetispeed(&tty, B57600);
   cfmakeraw(&tty);
 
   if (-1 == tcsetattr(fd, TCSANOW, &tty))

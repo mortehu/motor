@@ -37,7 +37,7 @@ static uint32_t next_pid_update;
 int main() {
   init();
 
-  serial_open(SERIAL_115200, process_request, generate_message);
+  serial_open(SERIAL_57600, process_request, generate_message);
 
 #if defined(HERCULES3_1)
   /* Set PWM frequency to 16.125 kHz.  */
