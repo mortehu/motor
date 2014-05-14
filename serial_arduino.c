@@ -64,11 +64,10 @@ serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 #include <util/setbaud.h>
       UBRRH = UBRRH_VALUE;
       UBRRL = UBRRL_VALUE;
-#if USE_2X
-      UCSRA |= (1 << U2X);
-#else
-      UCSRA &= ~(1 << U2X);
-#endif
+      if (USE_2X)
+        UCSRA |= (1 << U2X);
+      else
+        UCSRA &= ~(1 << U2X);
 #undef BAUD
 
       break;
@@ -80,11 +79,10 @@ serial_open(enum serial_baud_rate baud_rate, rx_callback rx_, tx_callback tx_)
 #include <util/setbaud.h>
       UBRRH = UBRRH_VALUE;
       UBRRL = UBRRL_VALUE;
-#if USE_2X
-      UCSRA |= (1 << U2X);
-#else
-      UCSRA &= ~(1 << U2X);
-#endif
+      if (USE_2X)
+        UCSRA |= (1 << U2X);
+      else
+        UCSRA &= ~(1 << U2X);
 #undef BAUD
 
       break;
