@@ -18,18 +18,11 @@ enum motor_message_id
 
 enum var_id
 {
-  VAR_MOTOR0_INVALID_TRANSITIONS = 0,
-  VAR_MOTOR0_INVALID_STATES = 1,
-  VAR_MOTOR1_INVALID_TRANSITIONS = 2,
-  VAR_MOTOR1_INVALID_STATES = 3,
-  VAR_BYTES_RECEIVED = 4,
-  VAR_WRONG_SYNC0_BYTES = 5,
-  VAR_WRONG_SYNC1_BYTES = 6,
-  VAR_UNKNOWN_MESSAGES = 7,
-  VAR_OK_MESSAGES = 8,
-  VAR_CRC_ERRORS = 9,
+#define VAR_DEFINE(symbol, description) symbol,
+#include "variables.h"
+#undef VAR_DEFINE
 
-  VAR_LAST = 10,
+  VAR_LAST,
 };
 
 struct motor_message

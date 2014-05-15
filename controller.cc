@@ -39,16 +39,9 @@ static const struct {
   uint8_t id;
   const char *name;
 } kVarNames[] = {
-  { VAR_MOTOR0_INVALID_TRANSITIONS, "motor #0 invalid transitions" },
-  { VAR_MOTOR0_INVALID_STATES, "motor #0 invalid states" },
-  { VAR_MOTOR1_INVALID_TRANSITIONS, "motor #1 invalid transitions" },
-  { VAR_MOTOR1_INVALID_STATES, "motor #1 invalid states" },
-  { VAR_BYTES_RECEIVED, "bytes received" },
-  { VAR_WRONG_SYNC0_BYTES, "wrong sync0 bytes" },
-  { VAR_WRONG_SYNC1_BYTES, "wrong sync1 bytes" },
-  { VAR_UNKNOWN_MESSAGES, "unknown messages" },
-  { VAR_OK_MESSAGES, "ok messages" },
-  { VAR_CRC_ERRORS, "crc errors" },
+#define VAR_DEFINE(symbol, description) { symbol, description },
+#include "variables.h"
+#undef VAR_DEFINE
 };
 
 static std::map<uint8_t, var> vars;
@@ -322,7 +315,7 @@ int main(int argc, char **argv) {
     gettimeofday(&now, nullptr);
 
     for (const auto &v : vars) {
-      const char *name = "unknown";
+      const char *name = "Unknown variable";
 
       for (const auto &n : kVarNames) {
         if (n.id == v.first) {
@@ -331,7 +324,7 @@ int main(int argc, char **argv) {
         }
       }
 
-      printf("Var %-28s: %u (%.3f seconds ago)\n", name, v.second.value,
+      printf("%-28s: %u (%.3f seconds ago)\n", name, v.second.value,
              (now.tv_sec - v.second.last_updated.tv_sec) +
                  1.0e-7 * (now.tv_usec - v.second.last_updated.tv_usec));
     }
