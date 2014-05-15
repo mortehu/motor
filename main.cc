@@ -52,9 +52,9 @@ int main() {
   motors[0].set_sensor_pins(A2, A1, A0);
   motors[0].set_output_pins(22, 23, 24);
 
-  motors[1].set_pwm_pins(6, 7, 8);
-  motors[1].set_sensor_pins(A3, A4, A5);
-  motors[1].set_output_pins(25, 26, 27);
+  motors[1].set_pwm_pins(8, 7, 6);
+  motors[1].set_sensor_pins(A5, A4, A3);
+  motors[1].set_output_pins(27, 26, 25);
 
   for (;;) {
     uint32_t now = micros();
