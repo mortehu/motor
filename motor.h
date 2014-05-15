@@ -20,9 +20,11 @@ public:
 
   unsigned int odometer() const { return odometer_; }
   int8_t orientation() const { return orientation_; }
-  signed short power() const { return power_; }
-  unsigned int invalid_transitions() const { return invalid_transitions_; }
-  unsigned int invalid_states() const { return invalid_states_; }
+  int16_t power() const { return power_; }
+  uint16_t invalid_transitions() const { return invalid_transitions_; }
+  uint16_t invalid_states() const { return invalid_states_; }
+  int16_t target_speed() const { return target_speed_; }
+  int16_t speed() const { return speed_; }
 
   void set_speed(int16_t speed) { target_speed_ = speed; }
 

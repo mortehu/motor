@@ -61,7 +61,7 @@ struct motor_message
         {
           uint8_t id;
           uint8_t reserved;
-          uint16_t value;
+          int16_t value;
         } var;
     } u;
 };

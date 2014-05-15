@@ -31,7 +31,7 @@ static bool display_dirty = true;
 static pthread_cond_t display_dirty_cond = PTHREAD_COND_INITIALIZER;
 
 struct var {
-  uint16_t value;
+  int16_t value;
   struct timeval last_updated;
 };
 
@@ -324,7 +324,7 @@ int main(int argc, char **argv) {
         }
       }
 
-      printf("%-28s: %u (%.3f seconds ago)\n", name, v.second.value,
+      printf("%-28s: %d (%.3f seconds ago)\n", name, v.second.value,
              (now.tv_sec - v.second.last_updated.tv_sec) +
                  1.0e-7 * (now.tv_usec - v.second.last_updated.tv_usec));
     }

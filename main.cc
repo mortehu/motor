@@ -25,7 +25,6 @@ static uint16_t bytes_received;
 static uint16_t wrong_sync0_bytes;
 static uint16_t wrong_sync1_bytes;
 static uint16_t unknown_messages;
-static uint16_t ok_messages;
 static uint16_t crc_errors;
 
 static bool first_message_received;
@@ -116,7 +115,6 @@ static void process_request(unsigned char ch) {
         motor_freeze_timeout = micros() + 1000000;
         motors[0].set_speed(request->u.speed.motor0_speed);
         motors[1].set_speed(-request->u.speed.motor1_speed);
-        ++ok_messages;
 
         break;
 
@@ -126,7 +124,6 @@ static void process_request(unsigned char ch) {
             request->u.acceleration.motor0_max_acceleration;
         motor1_max_acceleration =
             request->u.acceleration.motor1_max_acceleration;
-        ++ok_messages;
 
         break;
 
@@ -134,7 +131,6 @@ static void process_request(unsigned char ch) {
 
         vars_requested = true;
         var_progress = 0;
-        ++ok_messages;
 
         break;
 
@@ -166,36 +162,25 @@ static void generate_message(void *buffer, uint16_t *size) {
     if (var_progress >= VAR_LAST) vars_requested = false;
 
     switch (message->u.var.id) {
-      case VAR_MOTOR0_INVALID_TRANSITIONS:
-        message->u.var.value = motors[0].invalid_transitions();
+#define VAR(symbol, expression) \
+    case symbol: \
+        message->u.var.value = (expression); \
         break;
-      case VAR_MOTOR0_INVALID_STATES:
-        message->u.var.value = motors[0].invalid_states();
-        break;
-      case VAR_MOTOR1_INVALID_TRANSITIONS:
-        message->u.var.value = motors[1].invalid_transitions();
-        break;
-      case VAR_MOTOR1_INVALID_STATES:
-        message->u.var.value = motors[1].invalid_states();
-        break;
-      case VAR_BYTES_RECEIVED:
-        message->u.var.value = bytes_received;
-        break;
-      case VAR_WRONG_SYNC0_BYTES:
-        message->u.var.value = wrong_sync0_bytes;
-        break;
-      case VAR_WRONG_SYNC1_BYTES:
-        message->u.var.value = wrong_sync1_bytes;
-        break;
-      case VAR_UNKNOWN_MESSAGES:
-        message->u.var.value = unknown_messages;
-        break;
-      case VAR_OK_MESSAGES:
-        message->u.var.value = ok_messages;
-        break;
-      case VAR_CRC_ERRORS:
-        message->u.var.value = crc_errors;
-        break;
+      VAR(VAR_MOTOR0_INVALID_TRANSITIONS, motors[0].invalid_transitions());
+      VAR(VAR_MOTOR1_INVALID_TRANSITIONS, motors[1].invalid_transitions());
+      VAR(VAR_MOTOR0_INVALID_STATES, motors[0].invalid_states());
+      VAR(VAR_MOTOR1_INVALID_STATES, motors[1].invalid_states());
+      VAR(VAR_MOTOR0_POWER, motors[0].power());
+      VAR(VAR_MOTOR1_POWER, motors[1].power());
+      VAR(VAR_MOTOR0_TARGET_SPEED, motors[0].target_speed());
+      VAR(VAR_MOTOR1_TARGET_SPEED, motors[1].target_speed());
+      VAR(VAR_MOTOR0_SPEED, motors[0].speed());
+      VAR(VAR_MOTOR1_SPEED, motors[1].speed());
+      VAR(VAR_BYTES_RECEIVED, bytes_received);
+      VAR(VAR_WRONG_SYNC0_BYTES, wrong_sync0_bytes);
+      VAR(VAR_WRONG_SYNC1_BYTES, wrong_sync1_bytes);
+      VAR(VAR_UNKNOWN_MESSAGES, unknown_messages);
+      VAR(VAR_CRC_ERRORS, crc_errors);
       default:
         message->u.var.value = 0xdead;
     }
